@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
 
     # Source Info
     s.platform     =  :ios, '7.0'
-    s.source       =  {:git => 'git@github.com:shinyieva/SOSubtitle.git', :tag => '0.2'}
+    s.source       =  {:git => 'https://github.com/shinyieva/SOSubtitle.git', :tag => '0.2'}
     s.source_files = 'SOSubtitle'
 
     s.requires_arc = true
