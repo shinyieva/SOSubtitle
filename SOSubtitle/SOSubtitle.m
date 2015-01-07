@@ -212,6 +212,8 @@ NS_INLINE SubRipPosition convertCGRectToSubRipPosition(CGRect rect) {
     return [self _populateFromString:str error:NULL];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 NS_INLINE NSString * convertSubViewerLineBreaks(NSString *currentText) {
     NSUInteger currentTextLength = currentText.length;
     
@@ -235,6 +237,7 @@ NS_INLINE NSString * convertSubViewerLineBreaks(NSString *currentText) {
     
     return currentText;
 }
+#pragma clang diagnostic pop
 
 NS_INLINE BOOL scanLinebreak(NSScanner *scanner, NSString *linebreakString, int linenr) {
     BOOL success = ([scanner scanString:linebreakString intoString:NULL] && (++linenr >= 0));
