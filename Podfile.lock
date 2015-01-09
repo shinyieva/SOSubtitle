@@ -1,0 +1,18 @@
+PODS:
+  - Bolts (1.1.3)
+  - MMMarkdown (0.4)
+  - OHHTTPStubs (3.1.10):
+    - OHHTTPStubs/Core (= 3.1.10)
+  - OHHTTPStubs/Core (3.1.10)
+
+DEPENDENCIES:
+  - Bolts
+  - MMMarkdown
+  - OHHTTPStubs
+
+SPEC CHECKSUMS:
+  Bolts: 3db0a875235e0c9042b013af13af0f00f79b102c
+  MMMarkdown: 409977dc4a20728e1afd7a0ae023be936d5508af
+  OHHTTPStubs: 2038e929b6abb94881000524c1cb4aba0a1bb4a2
+
+COCOAPODS: 0.35.0
