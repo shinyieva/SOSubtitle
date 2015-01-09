@@ -14,4 +14,5 @@ Pod::Spec.new do |s|
     s.requires_arc = true
 
     s.dependency 'MMMarkdown', '~> 0.4'
+    s.dependency 'Bolts', '~> 1.1.3'
 end

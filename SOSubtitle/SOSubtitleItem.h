@@ -27,7 +27,7 @@ typedef struct {
 @property CMTime startTime;
 @property CMTime endTime;
 @property (copy, nonatomic) NSString *text;
-@property (copy, nonatomic) NSString *attributedText;
+@property (copy, nonatomic) NSAttributedString *attributedText;
 
 @property(readonly, getter = startTimeString) NSString *startTimeString;
 @property(readonly, getter = endTimeString) NSString *endTimeString;

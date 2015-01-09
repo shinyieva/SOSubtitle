@@ -20,6 +20,7 @@ profile
 .idea
 # Cocoapods
 Pods
+Pods/
 # Merge files
 *.orig
  
