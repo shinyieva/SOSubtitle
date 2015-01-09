@@ -9,6 +9,7 @@
 #import "SOSubtitleItem.h"
 
 #import "NSString+CMTime.h"
+#import "NSString+HTML.h"
 #import "SOSubtitleItem+SubtitleTime.h"
 #import "SOSubtitleItem+SubtitlePosition.h"
 
@@ -30,7 +31,8 @@
     self = [self init];
     
     if (self != nil) {
-        self.text = text;
+        _text = text;
+        _attributedText = [text HTMLString];
         _startTime = [SOSubtitleItem convertSubtitleTimeToCMTime:startTime];
         _endTime = [SOSubtitleItem convertSubtitleTimeToCMTime:endTime];
         _frame = CGRectZero;

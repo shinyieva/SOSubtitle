@@ -23,6 +23,9 @@
 		49AD13161A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD13141A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h */; };
 		49AD13171A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 49AD13151A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m */; };
 		49AD13181A5FE855006A606E /* NSString+CMTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD13041A5FCE69006A606E /* NSString+CMTime.h */; };
+		49AD13211A600DF9006A606E /* NSString+HTML.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD131F1A600DF9006A606E /* NSString+HTML.h */; };
+		49AD13221A600DF9006A606E /* NSString+HTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 49AD13201A600DF9006A606E /* NSString+HTML.m */; };
+		C4A8411E7738B5FF97D553A9 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ADDE8B4C9AC32EC66922B3A /* libPods.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1ADC38C3D6F8D3C45AD13880 /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		490E03D41A5D11A80064EED6 /* libSOSubtitle.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSOSubtitle.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		490E03D71A5D11A80064EED6 /* SOSubtitle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SOSubtitle.h; sourceTree = "<group>"; };
 		490E03D91A5D11A80064EED6 /* SOSubtitle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = SOSubtitle.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
@@ -65,6 +69,10 @@
 		49AD13111A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SOSubtitleItem+SubtitlePosition.m"; sourceTree = "<group>"; };
 		49AD13141A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SOSubtitleItem+SubtitleTime.h"; sourceTree = "<group>"; };
 		49AD13151A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SOSubtitleItem+SubtitleTime.m"; sourceTree = "<group>"; };
+		49AD131F1A600DF9006A606E /* NSString+HTML.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+HTML.h"; sourceTree = "<group>"; };
+		49AD13201A600DF9006A606E /* NSString+HTML.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+HTML.m"; sourceTree = "<group>"; };
+		4ADDE8B4C9AC32EC66922B3A /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		63752CB6B37D6855CEE3572D /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		6A0E1202C4F3242E0DB4CFDE /* libPods-SOSubtitleTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SOSubtitleTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8ECB0D3EBF8C941CFAE4145 /* Pods-SOSubtitleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SOSubtitleTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SOSubtitleTests/Pods-SOSubtitleTests.debug.xcconfig"; sourceTree = "<group>"; };
 		D56B7FA7B0045DB52C82752F /* Pods-SOSubtitleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SOSubtitleTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-SOSubtitleTests/Pods-SOSubtitleTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -75,6 +83,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4A8411E7738B5FF97D553A9 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,6 +167,8 @@
 				49AD13111A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m */,
 				49AD13141A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h */,
 				49AD13151A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m */,
+				49AD131F1A600DF9006A606E /* NSString+HTML.h */,
+				49AD13201A600DF9006A606E /* NSString+HTML.m */,
 			);
 			name = Helpers;
 			sourceTree = "<group>";
@@ -176,6 +187,8 @@
 			children = (
 				C8ECB0D3EBF8C941CFAE4145 /* Pods-SOSubtitleTests.debug.xcconfig */,
 				D56B7FA7B0045DB52C82752F /* Pods-SOSubtitleTests.release.xcconfig */,
+				63752CB6B37D6855CEE3572D /* Pods.debug.xcconfig */,
+				1ADC38C3D6F8D3C45AD13880 /* Pods.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -184,6 +197,7 @@
 			isa = PBXGroup;
 			children = (
 				6A0E1202C4F3242E0DB4CFDE /* libPods-SOSubtitleTests.a */,
+				4ADDE8B4C9AC32EC66922B3A /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -200,6 +214,7 @@
 				49AD130A1A5FDB39006A606E /* SOSubtitleItem.h in Headers */,
 				49AD13121A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.h in Headers */,
 				49AD13161A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h in Headers */,
+				49AD13211A600DF9006A606E /* NSString+HTML.h in Headers */,
 				49AD130F1A5FDC9D006A606E /* SOSubtitles-Prefix.pch in Headers */,
 				49AD13181A5FE855006A606E /* NSString+CMTime.h in Headers */,
 			);
@@ -212,10 +227,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 490E03E81A5D11A80064EED6 /* Build configuration list for PBXNativeTarget "SOSubtitle" */;
 			buildPhases = (
+				C8E05BABB7CF7913CCE704E9 /* Check Pods Manifest.lock */,
 				490E03D01A5D11A80064EED6 /* Sources */,
 				490E03D11A5D11A80064EED6 /* Frameworks */,
 				490E03D21A5D11A80064EED6 /* CopyFiles */,
 				49AD13091A5FDB2D006A606E /* Headers */,
+				C2562F45FCC60D40E8B3799E /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -323,6 +340,36 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		C2562F45FCC60D40E8B3799E /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C8E05BABB7CF7913CCE704E9 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -334,6 +381,7 @@
 				490E03DA1A5D11A80064EED6 /* SOSubtitle.m in Sources */,
 				49AD13171A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m in Sources */,
 				49AD13061A5FCE69006A606E /* NSString+CMTime.m in Sources */,
+				49AD13221A600DF9006A606E /* NSString+HTML.m in Sources */,
 				49AD13131A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -433,10 +481,11 @@
 		};
 		490E03E91A5D11A80064EED6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 63752CB6B37D6855CEE3572D /* Pods.debug.xcconfig */;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/${PROJECT}/SOSubtitles-Prefix.pch";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = "${inherited}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "include/$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;
@@ -445,10 +494,11 @@
 		};
 		490E03EA1A5D11A80064EED6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1ADC38C3D6F8D3C45AD13880 /* Pods.release.xcconfig */;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "${PROJECT_DIR}/${PROJECT}/SOSubtitles-Prefix.pch";
-				OTHER_LDFLAGS = "-ObjC";
+				OTHER_LDFLAGS = "${inherited}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PUBLIC_HEADERS_FOLDER_PATH = "include/$(PROJECT_NAME)";
 				SKIP_INSTALL = YES;

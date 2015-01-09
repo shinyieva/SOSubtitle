@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Pods-MMMarkdown.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Pods-SOSubtitleTests-OHHTTPStubs.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -14,15 +19,30 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>Pods.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>EE9C52D3FD4C09AD00C10116</key>
+		<key>7DF212F24BFE613406696AC8</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>F3A36FDE5CAA36AAA832E33F</key>
+		<key>ABC416DEC27979073CF84E73</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>B7E79C94BF57B37371475AAE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>C55075B34490269547DF1402</key>
 		<dict>
 			<key>primary</key>
 			<true/>

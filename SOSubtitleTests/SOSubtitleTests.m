@@ -35,7 +35,7 @@
 - (void)testThatSubtitleItemsInitializes {
     XCTAssertNotNil(self.subtitle, @"Should initialize subtitle.");
     XCTAssertNotNil(self.subtitle.subtitleItems, @"Should initialize subtitle.");
-    XCTAssertEqual([self.subtitle.subtitleItems count], 720, @"Should initialize subitleItems.");
+    XCTAssertEqual([self.subtitle.subtitleItems count], 100, @"Should initialize subitleItems.");
 }
 
 @end
