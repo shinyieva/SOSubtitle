@@ -7,10 +7,10 @@
 //
 
 #import "SOSubtitle.h"
+#import "SOSubtitleItem.h"
 
-#if SUBRIP_TAG_SUPPORT
-#import "NSMutableAttributedString+SRTString.h"
-#endif
+#import "NSString+CMTime.h"
+#import "SOSubtitleItem+SubtitlePosition.h"
 
 NSString *const SOSubtitlesErrorDomain = @"som.shinyieva.subtitles.error";
 
@@ -115,99 +115,6 @@ typedef enum {
     return self;
 }
 
-typedef struct _SOSubtitleTime {
-    int hours;
-    int minutes;
-    int seconds;
-    int milliseconds;
-} SOSubtitleTime;
-
-NS_INLINE int totalSecondsForHoursMinutesSeconds(int hours, int minutes, int seconds) {
-    return (hours * 3600) + (minutes * 60) + seconds;
-}
-
-+ (void)parseTimecodeString:(NSString *)timecodeString
-                intoSeconds:(int *)totalNumSeconds
-               milliseconds:(int *)milliseconds {
-    NSArray *timeComponents = [timecodeString componentsSeparatedByString:@":"];
-    
-    int hours = [(NSString *)[timeComponents objectAtIndex:0] intValue];
-    int minutes = [(NSString *)[timeComponents objectAtIndex:1] intValue];
-    
-    NSArray *secondsComponents = [(NSString *)[timeComponents objectAtIndex:2] componentsSeparatedByString : @","];
-    
-#if SUBRIP_SUBVIEWER_SUPPORT
-    
-    if (secondsComponents.count < 2) secondsComponents = [(NSString *)[timeComponents objectAtIndex:2] componentsSeparatedByString : @"."];
-    
-#endif
-    int seconds = [(NSString *)[secondsComponents objectAtIndex:0] intValue];
-    
-    if (secondsComponents.count < 2) {
-        *milliseconds = -1;
-    } else {
-        *milliseconds = [(NSString *)[secondsComponents objectAtIndex:1] intValue];
-    }
-    
-    *totalNumSeconds = totalSecondsForHoursMinutesSeconds(hours, minutes, seconds);
-}
-
-NS_INLINE CMTime convertSecondsMillisecondsToCMTime(int seconds, int milliseconds) {
-    CMTime secondsTime = CMTimeMake(seconds, 1);
-    CMTime millisecondsTime;
-    
-    if (milliseconds == -1) {
-        return secondsTime;
-    } else {
-        millisecondsTime = CMTimeMake(milliseconds, 1000);
-        CMTime time = CMTimeAdd(secondsTime, millisecondsTime);
-        return time;
-    }
-}
-
-+ (CMTime)parseTimecodeStringIntoCMTime:(NSString *)timecodeString {
-    int milliseconds;
-    int totalNumSeconds;
-    
-    [SOSubtitle parseTimecodeString:timecodeString
-                          intoSeconds:&totalNumSeconds
-                         milliseconds:&milliseconds];
-    
-    CMTime time = convertSecondsMillisecondsToCMTime(totalNumSeconds, milliseconds);
-    
-    return time;
-}
-
-NS_INLINE CMTime convertSubtitleTimeToCMTime(SOSubtitleTime subtitleTime) {
-    int totalSeconds = totalSecondsForHoursMinutesSeconds(subtitleTime.hours, subtitleTime.minutes, subtitleTime.seconds);
-    CMTime time = convertSecondsMillisecondsToCMTime(totalSeconds, subtitleTime.milliseconds);
-    
-    return time;
-}
-
-typedef struct _SubRipPosition {
-    int x1;
-    int x2;
-    int y1;
-    int y2;
-} SubRipPosition;
-
-NS_INLINE CGRect convertSubRipPositionToCGRect(SubRipPosition position) {
-    CGRect rect = CGRectMake(position.x1, position.y1, (position.x2 - position.x1), (position.y2 - position.y1));
-    
-    return rect;
-}
-
-NS_INLINE SubRipPosition convertCGRectToSubRipPosition(CGRect rect) {
-    SubRipPosition position;
-    
-    position.x1 = rect.origin.x;
-    position.x2 = rect.origin.x + rect.size.width;
-    position.y1 = rect.origin.y;
-    position.y2 = rect.origin.y + rect.size.height;
-    return position;
-}
-
 - (BOOL)_populateFromString:(NSString *)str {
     return [self _populateFromString:str error:NULL];
 }
@@ -293,7 +200,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
         SOSubtitleTime start = { -1, -1, -1, -1 };
         SOSubtitleTime end = { -1, -1, -1, -1 };
         BOOL hasPosition = NO;
-        SubRipPosition position;
+        SOSubtitlePosition position;
         int subtitleNr_;
         
         subtitleNr++;
@@ -446,13 +353,12 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
             }
         }
         
-        CMTime startTime = convertSubtitleTimeToCMTime(start);
-        CMTime endTime = convertSubtitleTimeToCMTime(end);
-        
-        SOSubtitleItem *item = [[SOSubtitleItem alloc] initWithText:subText startTime:startTime endTime:endTime];
+        SOSubtitleItem *item = [[SOSubtitleItem alloc] initWithText:subText
+                                                              start:start
+                                                                end:end];
         
         if (hasPosition) {
-            item.frame = convertSubRipPositionToCGRect(position);
+            item.frame = [SOSubtitleItem convertSubtitlePositionToCGRect:position];
         }
         
         [_subtitleItems addObject:item];
@@ -545,46 +451,6 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
 #endif /* if 1 */
 }
 
-- (void)parseTags;
-{
-    [self parseTagsWithOptions:nil];
-}
-
-- (void)parseTagsWithOptions:(NSDictionary *)options;
-{
-#if SUBRIP_TAG_SUPPORT
-    
-    for (SOSubtitleItem *item in _subtitleItems) {
-        [item parseTagsWithOptions:options];
-    }
-    
-#endif
-}
-
-
-NSString * srtTimecodeStringForCMTime(CMTime time) {
-    const CMTimeScale millisecondTimescale = 1000;
-    
-    CMTimeScale timescale = time.timescale;
-    
-    if (timescale != millisecondTimescale) {
-        time = CMTimeConvertScale(time, millisecondTimescale, kCMTimeRoundingMethod_RoundTowardZero);
-    }
-    
-    CMTimeValue total_milliseconds = time.value;
-    CMTimeValue milliseconds = total_milliseconds % millisecondTimescale;
-    CMTimeValue total_seconds = (total_milliseconds - milliseconds) / millisecondTimescale;
-    CMTimeValue seconds = total_seconds % 60;
-    CMTimeValue total_minutes = (total_seconds - seconds) / 60;
-    CMTimeValue minutes = total_minutes % 60;
-    CMTimeValue hours = (total_minutes - minutes) / 60;
-    
-    return [NSString stringWithFormat:@"%02d:%02d:%02d,%03d",
-            (int)hours,
-            (int)minutes,
-            (int)seconds,
-            (int)milliseconds];
-}
 
 NS_INLINE NSString * subtitleItem2SRTBlock(SOSubtitleItem *item, BOOL lineBreaksAllowed) {
     NSString *srtText = item.text;
@@ -767,191 +633,6 @@ NS_INLINE NSString * subtitleItem2SRTBlock(SOSubtitleItem *item, BOOL lineBreaks
     self = [self init];
     self.subtitleItems = [decoder decodeObjectForKey:@"subtitleItems"];
     return self;
-}
-
-@end
-
-#pragma mark - SOSubtitleItem implementation
-
-@implementation SOSubtitleItem
-
-- (instancetype)init {
-    self = [super init];
-    
-    if (self != nil) {
-        _uniqueID = [[NSProcessInfo processInfo] globallyUniqueString];
-    }
-    
-    return self;
-}
-
-- (instancetype)initWithText:(NSString *)text
-                   startTime:(CMTime)startTime
-                     endTime:(CMTime)endTime {
-    self = [self init];
-    
-    if (self != nil) {
-        self.text = text;
-        _startTime = startTime;
-        _endTime = endTime;
-        _frame = CGRectZero;
-    }
-    
-    return self;
-}
-
-- (void)parseTagsWithOptions:(NSDictionary *)options;
-{
-#if SUBRIP_TAG_SUPPORT
-    _attributeOptions = options;
-    _attributedText = [[NSMutableAttributedString alloc] initWithSRTString:_text
-                                                                   options:_attributeOptions];
-#else
-    _attributedText = nil;
-#endif
-}
-
-
-- (NSString *)startTimeString {
-    return [self _convertCMTimeToString:_startTime];
-}
-
-- (NSString *)endTimeString {
-    return [self _convertCMTimeToString:_endTime];
-}
-
-- (NSString *)_convertCMTimeToString:(CMTime)theTime {
-    // Need a string of format "hh:mm:ss". (No milliseconds.)
-    NSTimeInterval seconds = (NSTimeInterval)CMTimeGetSeconds(theTime);
-    NSDate *date1 = [NSDate new];
-    NSDate *date2 = [NSDate dateWithTimeInterval:seconds sinceDate:date1];
-    NSCalendarUnit unitFlags = NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-    NSDateComponents *converted = [[NSCalendar currentCalendar] components:unitFlags fromDate:date1 toDate:date2 options:0];
-    
-    NSString *str = [NSString stringWithFormat:@"%02d:%02d:%02d",
-                     (int)[converted hour],
-                     (int)[converted minute],
-                     (int)[converted second]];
-    
-    return str;
-}
-
-- (NSString *)startTimecodeString {
-    return srtTimecodeStringForCMTime(_startTime);
-}
-
-- (NSString *)endTimecodeString {
-    return srtTimecodeStringForCMTime(_endTime);
-}
-
-- (NSString *)positionString {
-    if (CGRectIsEmpty(_frame)) {
-        return @"";
-    } else {
-        SubRipPosition position = convertCGRectToSubRipPosition(_frame);
-        NSString *str = [NSString stringWithFormat:@"  X1:%d X2:%d Y1:%d Y2:%d",
-                         position.x1,
-                         position.x2,
-                         position.y1,
-                         position.y2];
-        return str;
-    }
-}
-
-- (NSString *)description {
-    NSString *text = self.text;
-    NSString *position = self.positionString;
-    
-    return [NSString stringWithFormat:@"%@ ---> %@%@: %@", self.startTimecodeString, self.endTimecodeString, position, text];
-}
-
-- (BOOL)isEqual:(id)obj {
-    if (obj == nil) {
-        return NO;
-    }
-    
-    if (![obj isKindOfClass:[SOSubtitleItem class]]) {
-        return NO;
-    }
-    
-    SOSubtitleItem *other = (SOSubtitleItem *)obj;
-    
-    id otherText = other.text;
-    
-    return ((CMTimeCompare(other.startTime, _startTime) == 0) &&
-            (CMTimeCompare(other.endTime, _endTime) == 0) &&
-            ((otherText == _text) || [otherText isEqualToString:_text]));
-}
-
-- (BOOL)isEqualToSOSubtitleItem:(SOSubtitleItem *)other {
-    if (other == nil) {
-        return NO;
-    }
-    
-    id otherText = other.text;
-    
-    return ((CMTimeCompare(other.startTime, _startTime) == 0) &&
-            (CMTimeCompare(other.endTime, _endTime) == 0) &&
-            ((otherText == _text) || [otherText isEqualToString:_text]));
-}
-
-- (NSInteger)startTimeInSeconds {
-    return (NSInteger)CMTimeGetSeconds(_startTime);
-}
-
-- (NSInteger)endTimeInSeconds {
-    return (NSInteger)CMTimeGetSeconds(_endTime);
-}
-
-- (double)startTimeDouble {
-    return (double)CMTimeGetSeconds(_startTime);
-}
-
-- (double)endTimeDouble {
-    return (double)CMTimeGetSeconds(_endTime);
-}
-
-- (void)setStartTimeFromString:(NSString *)timecodeString {
-    self.startTime = [SOSubtitle parseTimecodeStringIntoCMTime:timecodeString];
-}
-
-- (void)setEndTimeFromString:(NSString *)timecodeString {
-    self.endTime = [SOSubtitle parseTimecodeStringIntoCMTime:timecodeString];
-}
-
-#if SUBRIP_TAG_SUPPORT
-- (void)setAttributedText:(NSAttributedString *)attributedText {
-    _attributedText = attributedText;
-    _text = [attributedText srtString];
-}
-
-#endif
-
-
-- (BOOL)containsString:(NSString *)str {
-    NSRange searchResult = [_text rangeOfString:str options:NSCaseInsensitiveSearch];
-    
-    if (searchResult.location == NSNotFound) {
-        if ([str length] < 9) {
-            searchResult = [[self startTimeString] rangeOfString:str options:NSCaseInsensitiveSearch];
-            
-            if (searchResult.location == NSNotFound) {
-                searchResult = [[self endTimeString] rangeOfString:str options:NSCaseInsensitiveSearch];
-                
-                if (searchResult.location == NSNotFound) {
-                    return NO;
-                } else {
-                    return YES;
-                }
-            } else {
-                return YES;
-            }
-        } else {
-            return NO;
-        }
-    } else {
-        return YES;
-    }
 }
 
 @end

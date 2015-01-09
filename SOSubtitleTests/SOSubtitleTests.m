@@ -10,7 +10,7 @@
 #import <XCTest/XCTest.h>
 #import <OHHTTPStubs/OHHTTPStubs.h>
 
-#import "SOSubtitle.h"
+#import "SOSubtitles.h"
 
 @interface SOSubtitleTests : XCTestCase
 
@@ -36,13 +36,6 @@
     XCTAssertNotNil(self.subtitle, @"Should initialize subtitle.");
     XCTAssertNotNil(self.subtitle.subtitleItems, @"Should initialize subtitle.");
     XCTAssertEqual([self.subtitle.subtitleItems count], 720, @"Should initialize subitleItems.");
-}
-
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
 }
 
 @end

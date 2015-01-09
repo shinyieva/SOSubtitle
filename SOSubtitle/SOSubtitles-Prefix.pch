@@ -1,0 +1,12 @@
+//
+//  SOSubtitles-Prefix.pch
+//  SOSubtitle
+//
+//  Created by so30 on 09/01/15.
+//  Copyright (c) 2015 Sergio Ortega. All rights reserved.
+//
+
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
+#endif

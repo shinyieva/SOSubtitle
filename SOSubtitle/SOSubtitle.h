@@ -6,62 +6,9 @@
 //  Copyright (c) 2015 Sergio Ortega. All rights reserved.
 //
 
-@import Foundation;
-@import CoreGraphics;
-
 #import <CoreMedia/CMTime.h>
 
-#pragma mark - SOMSubtileItem Interface
-
-@interface SOSubtitleItem : NSObject
-
-@property CMTime startTime;
-@property CMTime endTime;
-@property(copy) NSString *text;
-@property(nonatomic, copy) NSAttributedString *attributedText;
-@property(nonatomic, readonly, strong) NSDictionary *attributeOptions;
-
-@property(readonly, getter = startTimeString) NSString *startTimeString;
-@property(readonly, getter = endTimeString) NSString *endTimeString;
-@property(readonly) NSString *uniqueID;
-
-@property (nonatomic) CGRect frame;
-
-- (instancetype)initWithText:(NSString *)text
-                   startTime:(CMTime)startTime
-                     endTime:(CMTime)endTime;
-
-- (void)parseTagsWithOptions:(NSDictionary *)options;
-
-// Without milliseconds!
--(NSString *)startTimeString;
--(NSString *)endTimeString;
-
-// SRT timecode strings
--(NSString *)startTimecodeString;
--(NSString *)endTimecodeString;
-
--(NSString *)_convertCMTimeToString:(CMTime)theTime;
-
--(NSString *)positionString;
-
--(NSString *)description;
-
--(NSInteger)startTimeInSeconds;
--(NSInteger)endTimeInSeconds;
-
-// These methods are for development only due to the issues involving floating-point arithmetic.
--(double)startTimeDouble;
--(double)endTimeDouble;
-
--(void)setStartTimeFromString:(NSString *)timecodeString;
--(void)setEndTimeFromString:(NSString *)timecodeString;
-
--(BOOL)containsString:(NSString *)str;
-
-@end
-
-#pragma mark - SOMSubtiles Interface
+@class SOSubtitleItem;
 
 @interface SOSubtitle : NSObject
 
@@ -79,9 +26,6 @@
 -(instancetype)initWithSubtitleItems:(NSMutableArray *)subtitleItems;
 
 -(BOOL)_populateFromString:(NSString *)str;
-
-- (void)parseTags;
-- (void)parseTagsWithOptions:(NSDictionary *)options;
 
 -(NSString *)srtString;
 -(NSString *)srtStringWithLineBreaksInSubtitlesAllowed:(BOOL)lineBreaksAllowed;
