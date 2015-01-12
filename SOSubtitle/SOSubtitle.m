@@ -178,7 +178,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                    [scanner scanInt:&start.minutes] && SCAN_STRING(@":") &&
                    [scanner scanInt:&start.seconds] &&
                    ((
-#if SUBRIP_SUBVIEWER_SUPPORT
+#if SUBVIEWER_SUPPORT
                         (SCAN_STRING(@",") || SCAN_STRING(@".")) &&
 #else
                         SCAN_STRING(@",") &&
@@ -188,7 +188,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                    &&
 
                    // Start/End separator
-#if SUBRIP_SUBVIEWER_SUPPORT
+#if SUBVIEWER_SUPPORT
                    (SCAN_STRING(@"-->") || SCAN_STRING(@",")) &&
 #else
                    SCAN_STRING(@"-->") && // We are skipping whitepace!
@@ -199,7 +199,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                    [scanner scanInt:&end.minutes] && SCAN_STRING(@":") &&
                    [scanner scanInt:&end.seconds] &&
                    ((
-#if SUBRIP_SUBVIEWER_SUPPORT
+#if SUBVIEWER_SUPPORT
                         (SCAN_STRING(@",") || SCAN_STRING(@".")) &&
 #else
                         SCAN_STRING(@",") &&
@@ -268,7 +268,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
             subtitleNr = subtitleNr_;
         }
 
-#if SUBRIP_SUBVIEWER_SUPPORT
+#if SUBVIEWER_SUPPORT
         subTextLine = convertSubViewerLineBreaks(subTextLine);
 #endif
 
@@ -388,7 +388,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                 scanPosition = SubRipScanPositionText;
              }
              } else {
-             #if SUBRIP_SUBVIEWER_SUPPORT
+             #if SUBVIEWER_SUPPORT
              cur.text = convertSubViewerLineBreaks(cur.text);
              #endif
 
@@ -418,84 +418,14 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
 #endif /* if 1 */
 }
 
-NS_INLINE NSString * subtitleItem2SRTBlock(SOSubtitleItem *item, BOOL lineBreaksAllowed) {
-    NSString *srtText = item.text;
-
-    if (lineBreaksAllowed == NO) {
-        srtText = [srtText stringByReplacingOccurrencesOfString:@"\n"
-                                                     withString:@"|"
-                                                        options:NSLiteralSearch
-                                                          range:NSMakeRange(0, srtText.length)];
-    } else {
-        NSString *const emptyLine = @"\n\n";
-        NSRange firstEmptyLineRange = [srtText rangeOfString:emptyLine options:NSLiteralSearch];
-
-        if (firstEmptyLineRange.location != NSNotFound) {
-            NSRange replacementRange = NSMakeRange(firstEmptyLineRange.location,
-                                                   srtText.length - firstEmptyLineRange.location);
-            srtText = [srtText stringByReplacingOccurrencesOfString:emptyLine
-                                                         withString:@"\n{\\empty_line}\n"
-                                                            options:NSLiteralSearch
-                                                              range:replacementRange];
-        }
-    }
-
-    NSString *srtBlock = [NSString stringWithFormat:@"%@ --> %@%@\n%@",
-                          srtTimecodeStringForCMTime(item.startTime),
-                          srtTimecodeStringForCMTime(item.endTime),
-                          item.positionString,
-                          srtText];
-
-    return srtBlock;
-}
-
-- (NSString *)srtString {
-    return [self srtStringWithLineBreaksInSubtitlesAllowed:YES];
-}
-
-- (NSString *)srtStringWithLineBreaksInSubtitlesAllowed:(BOOL)lineBreaksAllowed {
-    if (_subtitleItems == nil) return nil;
-
-    NSMutableString *srtText = [NSMutableString string];
-    NSUInteger srtNum = 1;
-
-    for (SOSubtitleItem *item in _subtitleItems) {
-        [srtText appendFormat:@"%lu\n%@\n\n",
-         (unsigned long)srtNum,
-         subtitleItem2SRTBlock(item, lineBreaksAllowed)];
-
-        srtNum++;
-    }
-
-    [srtText deleteCharactersInRange:NSMakeRange((srtText.length - 1), 1)]; // Delete last newline.
-
-    return srtText;
-}
-
 - (NSString *)description {
     return [NSString stringWithFormat:@"SRT file: %@", self.subtitleItems];
 }
 
-- (SOSubtitleItem *)subtitleItemAtIndex:(NSUInteger)index {
-    if (index >= _subtitleItems.count) return nil;
-    else return [_subtitleItems objectAtIndex:index];
-}
-
-- (NSUInteger)indexOfSubtitleItemWithStartTime:(CMTime)desiredTime {
-    return [self indexOfSubtitleItemForPointInTime:desiredTime];
-}
-
-- (NSUInteger)indexOfSubtitleItemForPointInTime:(CMTime)desiredTime {
-    NSUInteger index;
-
-    [self subtitleItemForPointInTime:desiredTime index:&index];
-    return index;
-}
-
-- (SOSubtitleItem *)subtitleItemForPointInTime:(CMTime)desiredTime index:(NSUInteger *)index {
+- (SOSubtitleItem *)subtitleItemForPointInTime:(CMTime)desiredTime {
     // Finds the first SOSubtitleItem whose startTime <= desiredTime < endTime.
     // Requires that we ensure the subtitleItems are ordered, because we are using binary search.
-
+    NSUInteger *index;
     NSUInteger subtitleItemsCount = _subtitleItems.count;
 
     // Custom binary search.
@@ -530,65 +460,6 @@ NS_INLINE NSString * subtitleItem2SRTBlock(SOSubtitleItem *item, BOOL lineBreaks
     if (index != NULL) *index = NSNotFound;
 
     return nil;
-}
-
-- (SOSubtitleItem *)nextSubtitleItemForPointInTime:(CMTime)desiredTime index:(NSUInteger *)index {
-    // Finds the first SOSubtitleItem whose startTime > desiredTime.
-    // Requires that we ensure the subtitleItems are ordered, because we are using binary search.
-    // Donated by Peter Ljunglöf (SubTTS)
-
-    NSUInteger subtitleItemsCount = _subtitleItems.count;
-
-    // Customized binary search.
-    NSUInteger low = 0;
-    NSUInteger high = subtitleItemsCount;
-
-    while (low < high) {
-        NSUInteger mid = (low + high) >> 1;
-        SOSubtitleItem *sub = [_subtitleItems objectAtIndex:mid];
-
-        if (CMTIME_COMPARE_INLINE(desiredTime, <, sub.startTime)) {
-            high = mid;
-        } else {
-            low = mid + 1;
-        }
-    }
-
-    if (low >= subtitleItemsCount) {
-        if (index != NULL) *index = NSNotFound;
-
-        return nil;
-    } else {
-        if (index != NULL) *index = low;
-
-        return [_subtitleItems objectAtIndex:low];
-    }
-}
-
-- (NSUInteger)indexOfSubtitleItemWithCharacterIndex:(NSUInteger)idx {
-    if (idx >= self.totalCharacterCountOfText) {
-        return NSNotFound;
-    }
-
-    NSUInteger currentCharacterCount = 0;
-    NSUInteger currentItemIndex = 0;
-    SOSubtitleItem *cur = [self.subtitleItems objectAtIndex:currentItemIndex];
-
-    while (currentCharacterCount < idx) {
-        currentCharacterCount += cur.text.length;
-        currentItemIndex++;
-    }
-    return currentItemIndex;
-}
-
-- (NSUInteger)totalCharacterCountOfText {
-    NSUInteger totalLength = 0;
-
-    for (SOSubtitleItem *cur in self.subtitleItems) {
-        totalLength += cur.text.length;
-    }
-
-    return totalLength;
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {

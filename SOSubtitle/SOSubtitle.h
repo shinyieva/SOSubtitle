@@ -20,20 +20,8 @@
 - (BFTask *)subtitleFromURL:(NSURL *)fileURL encoding:(NSStringEncoding)encoding error:(NSError *)error;
 - (BFTask *)subtitleWithString:(NSString *)str error:(NSError *)error;
 
-- (NSString *)srtString;
-- (NSString *)srtStringWithLineBreaksInSubtitlesAllowed:(BOOL)lineBreaksAllowed;
-
 - (NSString *)description;
 
-- (NSUInteger)indexOfSubtitleItemWithStartTime:(CMTime)desiredTime DEPRECATED_ATTRIBUTE; // The name of this method doesn’t match what it does.
-- (NSUInteger)indexOfSubtitleItemForPointInTime:(CMTime)desiredTime;
-
-- (SOSubtitleItem *)subtitleItemAtIndex:(NSUInteger)index; // In contrast to NSArray’s -objectAtIndex:, this returns nil if the index it out of bounds.
-- (SOSubtitleItem *)subtitleItemForPointInTime:(CMTime)desiredTime index:(NSUInteger *)index; // The index is optional: you can pass NULL.
-- (SOSubtitleItem *)nextSubtitleItemForPointInTime:(CMTime)desiredTime index:(NSUInteger *)index; // The index is optional: you can pass NULL.
-
-- (NSUInteger)indexOfSubtitleItemWithCharacterIndex:(NSUInteger)idx;
-
-- (NSUInteger)      totalCharacterCountOfText;
+- (SOSubtitleItem *)subtitleItemForPointInTime:(CMTime)desiredTime;
 
 @end

@@ -10,7 +10,7 @@
 
 @implementation SOSubtitleItem (SubtitleTime)
 
-+ (CMTime)convertSecondsMilliseconds:(int) seconds toCMTime:(int)milliseconds {
++ (CMTime)convertSecondsMilliseconds:(int)seconds toCMTime:(int)milliseconds {
     CMTime secondsTime = CMTimeMake(seconds, 1);
     CMTime millisecondsTime;
     

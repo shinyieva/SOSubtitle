@@ -47,7 +47,7 @@ NSString * srtTimecodeStringForCMTime(CMTime time) {
     
     NSArray *secondsComponents = [(NSString *)[timeComponents objectAtIndex:2] componentsSeparatedByString : @","];
     
-#if SUBRIP_SUBVIEWER_SUPPORT
+#if SUBVIEWER_SUPPORT
     
     if (secondsComponents.count < 2) secondsComponents = [(NSString *)[timeComponents objectAtIndex:2] componentsSeparatedByString : @"."];
     
