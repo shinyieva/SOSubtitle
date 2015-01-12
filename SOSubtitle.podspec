@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name         = 'SOSubtitle'
-    s.version      = '0.4'
+    s.version      = '0.5'
     s.license      =  { :type => "Affero GNU GPL v3", :file => "LICENSE.txt" }
     s.homepage     = 'http://github.com/shinyieva/SOSubtitle'
     s.authors      =  {'Sergio Ortega' => 'shinyieva@gmail.com'}
@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
 
     # Source Info
     s.platform     =  :ios, '7.0'
-    s.source       =  {:git => 'https://github.com/shinyieva/SOSubtitle.git', :tag => '0.4'}
+    s.source       =  {:git => 'https://github.com/shinyieva/SOSubtitle.git', :tag => '0.5'}
     s.source_files = 'SOSubtitle'
 
     s.requires_arc = true
