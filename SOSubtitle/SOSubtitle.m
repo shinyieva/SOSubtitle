@@ -425,7 +425,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
 - (SOSubtitleItem *)subtitleItemForPointInTime:(CMTime)desiredTime {
     // Finds the first SOSubtitleItem whose startTime <= desiredTime < endTime.
     // Requires that we ensure the subtitleItems are ordered, because we are using binary search.
-    NSUInteger *index;
+    NSUInteger *index = NULL;
     NSUInteger subtitleItemsCount = _subtitleItems.count;
 
     // Custom binary search.
