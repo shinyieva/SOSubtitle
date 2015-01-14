@@ -13,6 +13,7 @@
 #import "SOSubtitleItem+SubtitlePosition.h"
 
 #import <Bolts/Bolts.h>
+#import <AFNetworking/AFNetworking.h>
 
 NSString *const SOSubtitlesErrorDomain = @"som.shinyieva.subtitles.error";
 
@@ -52,16 +53,40 @@ typedef enum {
     }
 }
 
+- (BFTask *)subtitleFromURL:(NSURL *)url {
+    NSError *error;
+    return [[self subtitleFromURL:url encoding:NSUTF8StringEncoding error:error] continueWithBlock:^id(BFTask *task) {
+        if (task.result) {
+            NSString *string = [[NSString alloc] initWithData:task.result
+                                                     encoding:NSUTF8StringEncoding];
+            NSLog(@"download complete with result -> %@", string);
+            return [self subtitleWithString:string error:error];
+        } else {
+            return [BFTask taskWithError:task.error];
+        }
+    }];
+}
+
 - (BFTask *)subtitleFromURL:(NSURL *)fileURL
                    encoding:(NSStringEncoding)encoding
                       error:(NSError *)error {
-    NSString *str = [NSString stringWithContentsOfURL:fileURL
-                                             encoding:encoding
-                                                error:&error];
-
-    if (str == nil) return nil;
-
-    return [self subtitleWithString:str error:error];
+    
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    
+    AFHTTPRequestOperation *operation = [manager GET:fileURL.absoluteString
+                                          parameters:nil
+                                             success:nil
+                                             failure:nil];
+    BFTaskCompletionSource *completionSource = [BFTaskCompletionSource taskCompletionSource];
+    
+    [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        [completionSource setResult:responseObject];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        [completionSource setError:error];
+    }];
+    
+    return completionSource.task;
 }
 
 - (BFTask *)subtitleWithString:(NSString *)str
@@ -70,16 +95,14 @@ typedef enum {
     
     SOSubtitle *subtitle = [[SOSubtitle alloc] init];
 
-    if (subtitle) {
-        subtitle.subtitleItems = [NSMutableArray arrayWithCapacity:100];
-        BOOL success = [subtitle _populateFromString:str
-                                               error:&error];
+    subtitle.subtitleItems = [NSMutableArray arrayWithCapacity:100];
+    BOOL success = [subtitle _populateFromString:str
+                                           error:&error];
 
-        if (!success) {
-            [taskCompletionSource setError:error];
-        } else {
-            [taskCompletionSource setResult:subtitle];
-        }
+    if (!success) {
+        [taskCompletionSource setError:error];
+    } else {
+        [taskCompletionSource setResult:subtitle];
     }
 
     return taskCompletionSource.task;

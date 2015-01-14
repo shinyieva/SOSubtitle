@@ -16,6 +16,7 @@
 @property (nonatomic, strong) NSMutableArray *subtitleItems;
 @property (readonly) NSUInteger totalCharacterCountOfText;
 
+- (BFTask *)subtitleFromURL:(NSURL *)url;
 - (BFTask *)subtitleFromFile:(NSString *)filePath;
 - (BFTask *)subtitleFromURL:(NSURL *)fileURL encoding:(NSStringEncoding)encoding error:(NSError *)error;
 - (BFTask *)subtitleWithString:(NSString *)str error:(NSError *)error;
