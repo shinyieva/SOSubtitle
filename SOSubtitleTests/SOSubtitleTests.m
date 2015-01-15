@@ -24,8 +24,6 @@
 - (void)setUp {
     [super setUp];
     
-    
-    
 }
 
 - (void)tearDown {
@@ -34,7 +32,7 @@
     [super tearDown];
 }
 
-- (void)testThatSubtitleItemsInitializes {
+- (void)testThatSubtitleInitializesFromURL {
     
     XCTestExpectation *subtitleParseExpectation = [self expectationWithDescription:@"Subtitle parse."];
     
@@ -44,25 +42,35 @@
 
         XCTAssertNotNil(self.subtitle, @"Should initialize subtitle.");
         XCTAssertNotNil(self.subtitle.subtitleItems, @"Should initialize subtitle.");
-        XCTAssertEqual([self.subtitle.subtitleItems count], 100, @"Should initialize subitleItems.");
+        XCTAssertEqual([self.subtitle.subtitleItems count], 470, @"Should initialize subitleItems.");
 
         [subtitleParseExpectation fulfill];
         
         return nil;
     }];
-//    
-//    
-//    [[[SOSubtitle alloc] subtitleFromFile:OHPathForFileInBundle(@"subtitle.srt",nil)] continueWithBlock:^id(BFTask *task) {
-//        self.subtitle = task.result;
-//        
-//        
-//        XCTAssertNotNil(self.subtitle, @"Should initialize subtitle.");
-//        XCTAssertNotNil(self.subtitle.subtitleItems, @"Should initialize subtitle.");
-//        XCTAssertEqual([self.subtitle.subtitleItems count], 100, @"Should initialize subitleItems.");
-//        
-//        [subtitleParseExpectation fulfill];
-//        return nil;
-//    }];
+
+    
+    [self waitForExpectationsWithTimeout:50.0 handler:^(NSError *error) {
+        if(error) {
+            XCTFail(@"Expectation Failed with error: %@", error);
+        }
+    }];
+}
+
+- (void)testThatSubtitleInitializesFromFile {
+    XCTestExpectation *subtitleParseExpectation = [self expectationWithDescription:@"Subtitle parse."];
+
+    [[[SOSubtitle alloc] subtitleFromFile:OHPathForFileInBundle(@"subtitle.srt",nil)] continueWithBlock:^id(BFTask *task) {
+        self.subtitle = task.result;
+
+
+        XCTAssertNotNil(self.subtitle, @"Should initialize subtitle.");
+        XCTAssertNotNil(self.subtitle.subtitleItems, @"Should initialize subtitle.");
+        XCTAssertEqual([self.subtitle.subtitleItems count], 100, @"Should initialize subitleItems.");
+
+        [subtitleParseExpectation fulfill];
+        return nil;
+    }];
     
     [self waitForExpectationsWithTimeout:50.0 handler:^(NSError *error) {
         if(error) {

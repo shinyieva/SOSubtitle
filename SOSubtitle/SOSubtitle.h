@@ -13,12 +13,16 @@
 
 @interface SOSubtitle : NSObject
 
-@property (nonatomic, strong) NSMutableArray *subtitleItems;
-@property (readonly) NSUInteger totalCharacterCountOfText;
+@property (nonatomic, strong, readonly) NSMutableArray *subtitleItems;
 
 - (BFTask *)subtitleFromURL:(NSURL *)url;
+
 - (BFTask *)subtitleFromFile:(NSString *)filePath;
-- (BFTask *)subtitleFromURL:(NSURL *)fileURL encoding:(NSStringEncoding)encoding error:(NSError *)error;
+
+- (BFTask *)subtitleFromURL:(NSURL *)fileURL
+                   encoding:(NSStringEncoding)encoding
+                      error:(NSError *)error;
+
 - (BFTask *)subtitleWithString:(NSString *)str error:(NSError *)error;
 
 - (NSString *)description;

@@ -40,44 +40,6 @@
     return self;
 }
 
-- (NSString *)startTimeString {
-    return [self convertCMTimeToString:self.startTime];
-}
-
-- (NSString *)endTimeString {
-    return [self convertCMTimeToString:self.endTime];
-}
-
-- (NSString *)convertCMTimeToString:(CMTime)theTime {
-    // Need a string of format "hh:mm:ss". (No milliseconds.)
-    NSTimeInterval seconds = (NSTimeInterval)CMTimeGetSeconds(theTime);
-    NSDate *date1 = [NSDate new];
-    NSDate *date2 = [NSDate dateWithTimeInterval:seconds sinceDate:date1];
-    NSCalendarUnit unitFlags = NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
-    NSDateComponents *converted = [[NSCalendar currentCalendar] components:unitFlags fromDate:date1 toDate:date2 options:0];
-    
-    NSString *str = [NSString stringWithFormat:@"%02d:%02d:%02d",
-                     (int)[converted hour],
-                     (int)[converted minute],
-                     (int)[converted second]];
-    
-    return str;
-}
-
-- (NSString *)startTimecodeString {
-    return srtTimecodeStringForCMTime(self.startTime);
-}
-
-- (NSString *)endTimecodeString {
-    return srtTimecodeStringForCMTime(self.endTime);
-}
-
-- (NSString *)description {
-    NSString *text = self.text;
-    
-    return [NSString stringWithFormat:@"%@ ---> %@: %@", self.startTimecodeString, self.endTimecodeString, text];
-}
-
 - (BOOL)isEqual:(id)obj {
     if (obj == nil) {
         return NO;

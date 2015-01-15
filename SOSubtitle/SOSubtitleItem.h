@@ -23,8 +23,6 @@ typedef struct {
 @property (copy, nonatomic) NSString *text;
 @property (copy, nonatomic) NSAttributedString *attributedText;
 
-@property(readonly, getter = startTimeString) NSString *startTimeString;
-@property(readonly, getter = endTimeString) NSString *endTimeString;
 @property(readonly) NSString *uniqueID;
 
 @property (nonatomic) CGRect frame;
@@ -32,20 +30,5 @@ typedef struct {
 - (instancetype)initWithText:(NSString *)text
                        start:(SOSubtitleTime)startTime
                          end:(SOSubtitleTime)endTime;
-
-// Without milliseconds!
--(NSString *)startTimeString;
--(NSString *)endTimeString;
-
-// SRT timecode strings
--(NSString *)startTimecodeString;
--(NSString *)endTimecodeString;
-
--(NSString *)convertCMTimeToString:(CMTime)theTime;
-
--(NSString *)description;
-
--(NSInteger)startTimeInSeconds;
--(NSInteger)endTimeInSeconds;
 
 @end

@@ -10,4 +10,11 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
+
+#if defined(DEBUG) || PTV_QA_BUILD
+    #define SOSubtitleLog(...) NSLog(@"%s %@", __PRETTY_FUNCTION__, [NSString stringWithFormat:__VA_ARGS__])
+#else
+    #define SOSubtitleLog(...) do { } while (0)
+#endif
+
 #endif
