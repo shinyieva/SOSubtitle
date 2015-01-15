@@ -7,6 +7,7 @@
 //
 
 #import <CoreMedia/CMTime.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 typedef struct {
     int hours;
@@ -14,13 +15,6 @@ typedef struct {
     int seconds;
     int milliseconds;
 } SOSubtitleTime;
-
-typedef struct {
-    int x1;
-    int x2;
-    int y1;
-    int y2;
-} SOSubtitlePosition;
 
 @interface SOSubtitleItem : NSObject
 
@@ -49,20 +43,9 @@ typedef struct {
 
 -(NSString *)convertCMTimeToString:(CMTime)theTime;
 
--(NSString *)positionString;
-
 -(NSString *)description;
 
 -(NSInteger)startTimeInSeconds;
 -(NSInteger)endTimeInSeconds;
-
-// These methods are for development only due to the issues involving floating-point arithmetic.
--(double)startTimeDouble;
--(double)endTimeDouble;
-
--(void)setStartTimeFromString:(NSString *)timecodeString;
--(void)setEndTimeFromString:(NSString *)timecodeString;
-
--(BOOL)containsString:(NSString *)str;
 
 @end

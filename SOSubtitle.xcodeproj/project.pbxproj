@@ -18,13 +18,12 @@
 		49AD130B1A5FDB3F006A606E /* SOSubtitle.h in Headers */ = {isa = PBXBuildFile; fileRef = 490E03D71A5D11A80064EED6 /* SOSubtitle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49AD130C1A5FDB46006A606E /* SOSubtitles.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD13081A5FDA65006A606E /* SOSubtitles.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		49AD130F1A5FDC9D006A606E /* SOSubtitles-Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = 49AD130E1A5FDC9D006A606E /* SOSubtitles-Prefix.pch */; };
-		49AD13121A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD13101A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.h */; };
-		49AD13131A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m in Sources */ = {isa = PBXBuildFile; fileRef = 49AD13111A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m */; };
 		49AD13161A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD13141A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h */; };
 		49AD13171A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 49AD13151A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m */; };
 		49AD13181A5FE855006A606E /* NSString+CMTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD13041A5FCE69006A606E /* NSString+CMTime.h */; };
 		49AD13211A600DF9006A606E /* NSString+HTML.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD131F1A600DF9006A606E /* NSString+HTML.h */; };
 		49AD13221A600DF9006A606E /* NSString+HTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 49AD13201A600DF9006A606E /* NSString+HTML.m */; };
+		49EFBC991A683A1A0090F1E8 /* SOSubtitleItemTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 49EFBC981A683A1A0090F1E8 /* SOSubtitleItemTests.m */; };
 		C4A8411E7738B5FF97D553A9 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ADDE8B4C9AC32EC66922B3A /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -65,12 +64,11 @@
 		49AD13051A5FCE69006A606E /* NSString+CMTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+CMTime.m"; sourceTree = "<group>"; };
 		49AD13081A5FDA65006A606E /* SOSubtitles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SOSubtitles.h; sourceTree = "<group>"; };
 		49AD130E1A5FDC9D006A606E /* SOSubtitles-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SOSubtitles-Prefix.pch"; sourceTree = "<group>"; };
-		49AD13101A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SOSubtitleItem+SubtitlePosition.h"; sourceTree = "<group>"; };
-		49AD13111A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SOSubtitleItem+SubtitlePosition.m"; sourceTree = "<group>"; };
 		49AD13141A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SOSubtitleItem+SubtitleTime.h"; sourceTree = "<group>"; };
 		49AD13151A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SOSubtitleItem+SubtitleTime.m"; sourceTree = "<group>"; };
 		49AD131F1A600DF9006A606E /* NSString+HTML.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+HTML.h"; sourceTree = "<group>"; };
 		49AD13201A600DF9006A606E /* NSString+HTML.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+HTML.m"; sourceTree = "<group>"; };
+		49EFBC981A683A1A0090F1E8 /* SOSubtitleItemTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SOSubtitleItemTests.m; sourceTree = "<group>"; };
 		4ADDE8B4C9AC32EC66922B3A /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		63752CB6B37D6855CEE3572D /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		6A0E1202C4F3242E0DB4CFDE /* libPods-SOSubtitleTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-SOSubtitleTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -138,6 +136,7 @@
 				490E03F01A5D164F0064EED6 /* Stubs */,
 				490E03E41A5D11A80064EED6 /* Supporting Files */,
 				490E03EE1A5D13940064EED6 /* SOSubtitleTests.m */,
+				49EFBC981A683A1A0090F1E8 /* SOSubtitleItemTests.m */,
 			);
 			path = SOSubtitleTests;
 			sourceTree = "<group>";
@@ -163,8 +162,6 @@
 			children = (
 				49AD13041A5FCE69006A606E /* NSString+CMTime.h */,
 				49AD13051A5FCE69006A606E /* NSString+CMTime.m */,
-				49AD13101A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.h */,
-				49AD13111A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m */,
 				49AD13141A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h */,
 				49AD13151A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m */,
 				49AD131F1A600DF9006A606E /* NSString+HTML.h */,
@@ -212,7 +209,6 @@
 				49AD130C1A5FDB46006A606E /* SOSubtitles.h in Headers */,
 				49AD130B1A5FDB3F006A606E /* SOSubtitle.h in Headers */,
 				49AD130A1A5FDB39006A606E /* SOSubtitleItem.h in Headers */,
-				49AD13121A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.h in Headers */,
 				49AD13161A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.h in Headers */,
 				49AD13211A600DF9006A606E /* NSString+HTML.h in Headers */,
 				49AD130F1A5FDC9D006A606E /* SOSubtitles-Prefix.pch in Headers */,
@@ -382,7 +378,6 @@
 				49AD13171A5FE7E7006A606E /* SOSubtitleItem+SubtitleTime.m in Sources */,
 				49AD13061A5FCE69006A606E /* NSString+CMTime.m in Sources */,
 				49AD13221A600DF9006A606E /* NSString+HTML.m in Sources */,
-				49AD13131A5FE754006A606E /* SOSubtitleItem+SubtitlePosition.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -390,6 +385,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49EFBC991A683A1A0090F1E8 /* SOSubtitleItemTests.m in Sources */,
 				490E03EF1A5D13940064EED6 /* SOSubtitleTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

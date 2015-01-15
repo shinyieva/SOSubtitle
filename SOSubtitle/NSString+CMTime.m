@@ -7,8 +7,6 @@
 //
 
 #import "NSString+CMTime.h"
-
-#import "SOSubtitleItem+SubtitlePosition.h"
 #import "SOSubtitleItem+SubtitleTime.h"
 
 @implementation NSString (CMTime)

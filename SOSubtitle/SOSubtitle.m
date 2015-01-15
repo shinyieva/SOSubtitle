@@ -10,7 +10,6 @@
 #import "SOSubtitleItem.h"
 
 #import "NSString+CMTime.h"
-#import "SOSubtitleItem+SubtitlePosition.h"
 
 #import <Bolts/Bolts.h>
 #import <AFNetworking/AFNetworking.h>
@@ -55,12 +54,16 @@ typedef enum {
 
 - (BFTask *)subtitleFromURL:(NSURL *)url {
     NSError *error;
-    return [[self subtitleFromURL:url encoding:NSUTF8StringEncoding error:error] continueWithBlock:^id(BFTask *task) {
+
+    return [[self subtitleFromURL:url
+                         encoding:NSUTF8StringEncoding
+                            error:error] continueWithBlock:^id (BFTask *task) {
         if (task.result) {
             NSString *string = [[NSString alloc] initWithData:task.result
                                                      encoding:NSUTF8StringEncoding];
             NSLog(@"download complete with result -> %@", string);
-            return [self subtitleWithString:string error:error];
+            return [self subtitleWithString:string
+                                      error:error];
         } else {
             return [BFTask taskWithError:task.error];
         }
@@ -70,29 +73,30 @@ typedef enum {
 - (BFTask *)subtitleFromURL:(NSURL *)fileURL
                    encoding:(NSStringEncoding)encoding
                       error:(NSError *)error {
-    
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+
     manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-    
+
     AFHTTPRequestOperation *operation = [manager GET:fileURL.absoluteString
                                           parameters:nil
                                              success:nil
                                              failure:nil];
     BFTaskCompletionSource *completionSource = [BFTaskCompletionSource taskCompletionSource];
-    
+
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-        [completionSource setResult:responseObject];
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        [completionSource setError:error];
-    }];
-    
+                   [completionSource setResult:responseObject];
+               }
+                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                         [completionSource setError:error];
+                                     }];
+
     return completionSource.task;
 }
 
 - (BFTask *)subtitleWithString:(NSString *)str
                          error:(NSError *)error {
     BFTaskCompletionSource *taskCompletionSource = [BFTaskCompletionSource taskCompletionSource];
-    
+
     SOSubtitle *subtitle = [[SOSubtitle alloc] init];
 
     subtitle.subtitleItems = [NSMutableArray arrayWithCapacity:100];
@@ -189,8 +193,6 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
         NSString *subTextLine;
         SOSubtitleTime start = { -1, -1, -1, -1 };
         SOSubtitleTime end = { -1, -1, -1, -1 };
-        BOOL hasPosition = NO;
-        SOSubtitlePosition position;
         int subtitleNr_;
 
         subtitleNr++;
@@ -229,23 +231,6 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
 #endif
                         [scanner scanInt:&end.milliseconds]
                         ) || YES) // We either find milliseconds or we ignore them.
-                   &&
-
-                   // Optional position
-                   (
-                       SCAN_LINEBREAK() ||
-                       ( // If there is no line break, this could be position information.
-                           [scanner scanString:@"X1:" intoString:NULL] &&
-                           [scanner scanInt:&position.x1] &&
-                           [scanner scanString:@"X2:" intoString:NULL] &&
-                           [scanner scanInt:&position.x2] &&
-                           [scanner scanString:@"Y1:" intoString:NULL] &&
-                           [scanner scanInt:&position.y1] &&
-                           [scanner scanString:@"Y2:" intoString:NULL] &&
-                           [scanner scanInt:&position.y2] &&
-                           SCAN_LINEBREAK() &&
-                           (hasPosition = YES))
-                   )
                    &&
 
                    // Subtitle text
@@ -346,10 +331,6 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
         SOSubtitleItem *item = [[SOSubtitleItem alloc] initWithText:subText
                                                               start:start
                                                                 end:end];
-
-        if (hasPosition) {
-            item.frame = [SOSubtitleItem convertSubtitlePositionToCGRect:position];
-        }
 
         [_subtitleItems addObject:item];
 
