@@ -15,18 +15,33 @@
 
 @property (nonatomic, strong, readonly) NSMutableArray *subtitleItems;
 
+/**
+ Fetch subtitle form given URL.
+ 
+ @param url Subtitle source URL.
+ 
+ @return A `BFTask`  that will return an `SOSubtitle` object when completed successfully.
+ */
 - (BFTask *)subtitleFromURL:(NSURL *)url;
-
-- (BFTask *)subtitleFromFile:(NSString *)filePath;
 
 - (BFTask *)subtitleFromURL:(NSURL *)fileURL
                    encoding:(NSStringEncoding)encoding
                       error:(NSError *)error;
 
-- (BFTask *)subtitleWithString:(NSString *)str error:(NSError *)error;
-
 - (NSString *)description;
 
+/**
+ Finds the first SOSubtitleItem whose startTime <= desiredTime < endTime.
+ 
+ @param desiredTime Playback time for display subtitle in `CMTime` format.
+ */
 - (SOSubtitleItem *)subtitleItemForPointInTime:(CMTime)desiredTime;
+
+/**
+ Finds the first SOSubtitleItem whose startTime <= desiredTime < endTime.
+ 
+ @param time Playback time to display subtitle in `NSTimeInterval` format
+ */
+- (SOSubtitleItem *)subtitleItemAtTime:(NSTimeInterval)time;
 
 @end

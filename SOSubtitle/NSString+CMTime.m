@@ -35,43 +35,56 @@ NSString * srtTimecodeStringForCMTime(CMTime time) {
             (int)milliseconds];
 }
 
-+ (void)parseTimecodeString:(NSString *)timecodeString
-                intoSeconds:(int *)totalNumSeconds
-               milliseconds:(int *)milliseconds {
++ (CMTime)parseTimecodeStringIntoCMTime:(NSString *)timecodeString {
+    NSUInteger milliseconds;
+    NSUInteger totalNumSeconds;
+    
     NSArray *timeComponents = [timecodeString componentsSeparatedByString:@":"];
     
-    int hours = [(NSString *)[timeComponents objectAtIndex:0] intValue];
-    int minutes = [(NSString *)[timeComponents objectAtIndex:1] intValue];
+    int hours = [(NSString *)timeComponents[0] intValue];
+    int minutes = [(NSString *)timeComponents[1] intValue];
     
-    NSArray *secondsComponents = [(NSString *)[timeComponents objectAtIndex:2] componentsSeparatedByString : @","];
+    NSArray *secondsComponents = [(NSString *)timeComponents[2] componentsSeparatedByString:@","];
     
 #if SUBVIEWER_SUPPORT
     
-    if (secondsComponents.count < 2) secondsComponents = [(NSString *)[timeComponents objectAtIndex:2] componentsSeparatedByString : @"."];
-    
-#endif
-    int seconds = [(NSString *)[secondsComponents objectAtIndex:0] intValue];
-    
     if (secondsComponents.count < 2) {
-        *milliseconds = -1;
-    } else {
-        *milliseconds = [(NSString *)[secondsComponents objectAtIndex:1] intValue];
+        secondsComponents = [(NSString *)timeComponents[2] componentsSeparatedByString:@"."];
     }
     
-    *totalNumSeconds = [SOSubtitleItem totalSecondsForHours:hours minutes:minutes seconds:seconds];
-}
-
-+ (CMTime)parseTimecodeStringIntoCMTime:(NSString *)timecodeString {
-    int milliseconds;
-    int totalNumSeconds;
+#endif
+    int seconds = [(NSString *)secondsComponents[0] intValue];
     
-    [self parseTimecodeString:timecodeString
-                  intoSeconds:&totalNumSeconds
-                 milliseconds:&milliseconds];
+    if (secondsComponents.count < 2) {
+        milliseconds = -1;
+    } else {
+        milliseconds = [(NSString *)secondsComponents[1] intValue];
+    }
     
-    CMTime time = [SOSubtitleItem convertSecondsMilliseconds:totalNumSeconds toCMTime:milliseconds];
+    totalNumSeconds = [SOSubtitleItem totalSecondsForHours:hours minutes:minutes seconds:seconds];
+    
+    CMTime time = [SOSubtitleItem convertSecondsMilliseconds:totalNumSeconds
+                                                    toCMTime:milliseconds];
     
     return time;
+}
+
++ (NSString *)stringFromCMTime:(CMTime)theTime {
+    // Need a string of format "hh:mm:ss". (No milliseconds.)
+    NSTimeInterval seconds = (NSTimeInterval)CMTimeGetSeconds(theTime);
+    NSDate *date1 = [NSDate new];
+    NSDate *date2 = [NSDate dateWithTimeInterval:seconds sinceDate:date1];
+    NSCalendarUnit unitFlags = NSCalendarUnitHour | NSCalendarUnitMinute | NSCalendarUnitSecond;
+    NSDateComponents *converted = [[NSCalendar currentCalendar] components:unitFlags
+                                                                  fromDate:date1
+                                                                    toDate:date2
+                                                                   options:0];
+    
+    NSString *str = [NSString stringWithFormat:@"%02d:%02d:%02d",
+                     (int)[converted hour],
+                     (int)[converted minute],
+                     (int)[converted second]];
+    return str;
 }
 
 @end

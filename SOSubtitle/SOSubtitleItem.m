@@ -34,7 +34,6 @@
         _attributedText = [text HTMLString];
         _startTime = [SOSubtitleItem convertSubtitleTimeToCMTime:startTime];
         _endTime = [SOSubtitleItem convertSubtitleTimeToCMTime:endTime];
-        _frame = CGRectZero;
     }
     
     return self;
@@ -70,6 +69,11 @@
             ((otherText == self.text) || [otherText isEqualToString:self.text]));
 }
 
-
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@ --> %@ : %@",
+            [NSString stringFromCMTime:self.startTime],
+            [NSString stringFromCMTime:self.endTime],
+            self.text];
+}
 
 @end

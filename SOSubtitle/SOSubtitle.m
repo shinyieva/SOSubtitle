@@ -28,34 +28,21 @@ typedef enum {
 
 @property (strong, nonatomic, readwrite) NSMutableArray *subtitleItems;
 
+@property (strong, nonatomic) NSDictionary *subtitleItemsDictionary;
+
 @end
 
 @implementation SOSubtitle
 
-- (BFTask *)subtitleFromFile:(NSString *)filePath {
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-        NSStringEncoding encoding;
-        NSError *error = nil;
-        NSString *string = [[NSString alloc] initWithContentsOfFile:filePath
-                                                       usedEncoding:&encoding
-                                                              error:&error];
-
-        if ([error code] == NSFileReadUnknownStringEncodingError) { // couldn't determine file encoding
-            error = nil;
-            string = [[NSString alloc] initWithContentsOfFile:filePath
-                                                     encoding:NSISOLatin1StringEncoding
-                                                        error:&error];
+- (NSDictionary *)subtitleItemsDictionary {
+    if (!_subtitleItemsDictionary) {
+        NSMutableDictionary *aux = [[NSMutableDictionary alloc] init];
+        for (SOSubtitleItem *item in self.subtitleItems) {
+            [aux setObject:item forKey:@(floor(CMTimeGetSeconds(item.startTime)))];
         }
-
-        if (string == nil) {
-            SOSubtitleLog(@"%@", [error localizedDescription]);
-            return [BFTask taskWithError:error];
-        } else {
-            return [self subtitleWithString:string error:NULL];
-        }
-    } else {
-        return nil;
+        _subtitleItemsDictionary = [aux copy];
     }
+    return _subtitleItemsDictionary;
 }
 
 - (BFTask *)subtitleFromURL:(NSURL *)url {
@@ -67,7 +54,6 @@ typedef enum {
         if (task.result) {
             NSString *string = [[NSString alloc] initWithData:task.result
                                                      encoding:NSUTF8StringEncoding];
-            SOSubtitleLog(@"download complete with result -> %@", string);
             return [self subtitleWithString:string
                                       error:error];
         } else {
@@ -91,8 +77,8 @@ typedef enum {
     BFTaskCompletionSource *completionSource = [BFTaskCompletionSource taskCompletionSource];
 
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-                   [completionSource setResult:responseObject];
-               }
+                                         [completionSource setResult:responseObject];
+                                     }
                                      failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                          [completionSource setError:error];
                                      }];
@@ -107,8 +93,7 @@ typedef enum {
     SOSubtitle *subtitle = [[SOSubtitle alloc] init];
 
     subtitle.subtitleItems = [NSMutableArray arrayWithCapacity:100];
-    BOOL success = [subtitle _populateFromString:str
-                                           error:&error];
+    BOOL success = [subtitle parseFromString:str error:error];
 
     if (!success) {
         [taskCompletionSource setError:error];
@@ -160,8 +145,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
 }
 
 // Returns YES if successful, NO if not.
-- (BOOL)_populateFromString:(NSString *)str
-                      error:(NSError **)error {
+- (BOOL)parseFromString:(NSString *)str error:(NSError *)error {
 #if 1
     return [self subtitleItemsFromMalformedString:str error:error];
 #else /* if 1 */
@@ -169,7 +153,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
 #endif /* if 1 */
 }
 
-- (BOOL)subtitleItemsFromMalformedString:(NSString *)str error:(NSError **)error{
+- (BOOL)subtitleItemsFromMalformedString:(NSString *)str error:(NSError *)error{
     // Should handle mal-formed SRT files. May fill error even if parsing was successful!
     // Basis for implementation donated by Peter Ljunglöf (SubTTS)
 #   define SCAN_LINEBREAK() scanLinebreak(scanner, linebreakString, lineNr)
@@ -186,7 +170,6 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                    [scanner scanCharactersFromSet:newlineCharacterSet intoString:&linebreakString]);
         
         if (ok == NO) {
-            SOSubtitleLog(@"Parse error in SRT string: no line break found!");
             linebreakString = @"\n";
         }
         
@@ -279,9 +262,9 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                 NSDictionary *errorDetail = [NSDictionary dictionaryWithObjectsAndKeys:
                                              errorDescription, NSLocalizedDescriptionKey,
                                              nil];
-                *error = [NSError errorWithDomain:SOSubtitlesErrorDomain
-                                             code:kCouldNotParseSRT
-                                         userInfo:errorDetail];
+                error = [NSError errorWithDomain:SOSubtitlesErrorDomain
+                                            code:kCouldNotParseSRT
+                                        userInfo:errorDetail];
             }
             
             return NO;
@@ -299,7 +282,8 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
         subTextLines = [NSMutableArray arrayWithObject:subTextLine];
         
         // Accumulate multi-line text if any.
-        while ([scanner scanUpToString:linebreakString intoString:&subTextLine] && (SCAN_LINEBREAK() || [scanner isAtEnd]))
+        while ([scanner scanUpToString:linebreakString intoString:&subTextLine] &&
+               (SCAN_LINEBREAK() || [scanner isAtEnd]))
             [subTextLines addObject:subTextLine];
         
         if (subTextLines.count == 1) {
@@ -330,9 +314,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                     
                     tagRe = [[NSRegularExpression alloc] initWithPattern:tagPattern
                                                                  options:0
-                                                                   error:error];
-                    
-                    if (tagRe == nil) SOSubtitleLog(@"%@", *error);
+                                                                   error:&error];
                 }
                 
                 [tagRe replaceMatchesInString:subTextMutable
@@ -352,15 +334,6 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
         
         while (SCAN_LINEBREAK());  // Skip trailing empty lines.
     }
-    
-#if 0
-    SOSubtitleLog(@"Read %d = %lu subtitles", subtitleNr, [_subtitleItems count]);
-    SOSubtitleItem *sub = [_subtitleItems objectAtIndex:0];
-    SOSubtitleLog(@"FIRST: '%@'", sub);
-    sub = [_subtitleItems lastObject];
-    SOSubtitleLog(@"LAST: '%@'", sub);
-#endif
-    
     return YES;
     
 #   undef SCAN_LINEBREAK
@@ -478,6 +451,10 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
     if (index != NULL) *index = NSNotFound;
 
     return nil;
+}
+
+- (SOSubtitleItem *)subtitleItemAtTime:(NSTimeInterval)time {
+    return self.subtitleItemsDictionary[@(floor(time))];
 }
 
 - (void)encodeWithCoder:(NSCoder *)encoder {

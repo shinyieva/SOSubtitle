@@ -25,8 +25,6 @@ typedef struct {
 
 @property(readonly) NSString *uniqueID;
 
-@property (nonatomic) CGRect frame;
-
 - (instancetype)initWithText:(NSString *)text
                        start:(SOSubtitleTime)startTime
                          end:(SOSubtitleTime)endTime;
