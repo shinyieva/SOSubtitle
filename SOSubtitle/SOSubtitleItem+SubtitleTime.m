@@ -10,7 +10,7 @@
 
 @implementation SOSubtitleItem (SubtitleTime)
 
-+ (CMTime)convertSecondsMilliseconds:(int)seconds toCMTime:(int)milliseconds {
++ (CMTime)convertSecondsMilliseconds:(NSUInteger)seconds toCMTime:(NSUInteger)milliseconds {
     CMTime secondsTime = CMTimeMake(seconds, 1);
     CMTime millisecondsTime;
     
@@ -23,14 +23,17 @@
     }
 }
 
-+ (int)totalSecondsForHours:(int)hours minutes:(int)minutes seconds:(int)seconds {
++ (NSUInteger)totalSecondsForHours:(NSUInteger)hours
+                           minutes:(NSUInteger)minutes
+                           seconds:(NSUInteger)seconds
+{
     return (hours * 3600) + (minutes * 60) + seconds;
 }
 
 + (CMTime)convertSubtitleTimeToCMTime:(SOSubtitleTime)subtitleTime {
-    int totalSeconds = [SOSubtitleItem totalSecondsForHours:subtitleTime.hours
-                                                    minutes:subtitleTime.minutes
-                                                    seconds:subtitleTime.seconds];
+    NSUInteger totalSeconds = [SOSubtitleItem totalSecondsForHours:subtitleTime.hours
+                                                           minutes:subtitleTime.minutes
+                                                           seconds:subtitleTime.seconds];
     CMTime time = [SOSubtitleItem convertSecondsMilliseconds:totalSeconds
                                                     toCMTime:subtitleTime.milliseconds];
     

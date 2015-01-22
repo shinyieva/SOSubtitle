@@ -11,50 +11,39 @@
 #import <OHHTTPStubs/OHHTTPStubs.h>
 #import <Bolts/Bolts.h>
 
+#import "SOAsyncTestHelper.h"
 #import "SOSubtitles.h"
 
 @interface SOSubtitleTests : XCTestCase
-
-@property (strong, nonatomic) SOSubtitle *subtitle;
 
 @end
 
 @implementation SOSubtitleTests
 
-- (void)setUp {
-    [super setUp];
+- (void)testThatSubtitleInitializesFromURL {
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse *(NSURLRequest *request) {
+        NSString * path = OHPathForFileInBundle(@"subtitle.srt", nil);
+        return [OHHTTPStubsResponse responseWithFileAtPath:path
+                                                statusCode:200
+                                                   headers:nil];
+    }];
     
+    SOSubtitle * __block subtitle = nil;
+    NSError * __block error = nil;
     
-    
-}
-
-- (void)tearDown {
-    self.subtitle = nil;
-    
-    [super tearDown];
-}
-
-- (void)testThatSubtitleItemsInitializes {
-    
-    XCTestExpectation *subtitleParseExpectation = [self expectationWithDescription:@"Subtitle parse."];
-    
-    [[[SOSubtitle alloc] subtitleFromFile:OHPathForFileInBundle(@"subtitle.srt",nil)] continueWithBlock:^id(BFTask *task) {
-        self.subtitle = task.result;
+    NSURL *url = [NSURL URLWithString:@"http://test.com/subtitle.srt"];
+    [[[SOSubtitle alloc] subtitleFromURL:url] continueWithBlock:^id(BFTask *task) {
+        subtitle = task.result;
         
-        
-        XCTAssertNotNil(self.subtitle, @"Should initialize subtitle.");
-        XCTAssertNotNil(self.subtitle.subtitleItems, @"Should initialize subtitle.");
-        XCTAssertEqual([self.subtitle.subtitleItems count], 100, @"Should initialize subitleItems.");
-        
-        [subtitleParseExpectation fulfill];
         return nil;
     }];
     
-    [self waitForExpectationsWithTimeout:10.0 handler:^(NSError *error) {
-        if(error) {
-            XCTFail(@"Expectation Failed with error: %@", error);
-        }
-    }];
+    SOAssertEventually(subtitle, @"Should complete with response.");
+    XCTAssertNotNil(subtitle.subtitleItems, @"Should initialize subtitle.");
+    XCTAssertEqual([subtitle.subtitleItems count], 100, @"Should initialize subitleItems.");
+    XCTAssertNil(error, @"Should complete without error.");
 }
 
 @end

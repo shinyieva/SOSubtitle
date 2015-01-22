@@ -13,10 +13,8 @@ extern NSString * srtTimecodeStringForCMTime(CMTime time);
 
 @interface NSString (CMTime)
 
-+ (void)parseTimecodeString:(NSString *)timecodeString
-                intoSeconds:(int *)totalNumSeconds
-               milliseconds:(int *)milliseconds;
-
 + (CMTime)parseTimecodeStringIntoCMTime:(NSString *)timecodeString;
+
++ (NSString *)stringFromCMTime:(CMTime)theTime;
 
 @end

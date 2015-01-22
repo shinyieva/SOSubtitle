@@ -10,76 +10,95 @@
 #import "SOSubtitleItem.h"
 
 #import "NSString+CMTime.h"
-#import "SOSubtitleItem+SubtitlePosition.h"
 
 #import <Bolts/Bolts.h>
+#import <AFNetworking/AFNetworking.h>
 
 NSString *const SOSubtitlesErrorDomain = @"som.shinyieva.subtitles.error";
 
 const int kCouldNotParseSRT = 1009;
 
 typedef enum {
-    SubRipScanPositionArrayIndex,
-    SubRipScanPositionTimes,
-    SubRipScanPositionText
-} SubRipScanPosition;
+    SOSubtitleScanPositionArrayIndex,
+    SOSubtitleScanPositionTimes,
+    SOSubtitleScanPositionText
+} SOSubtitleScanPosition;
+
+@interface SOSubtitle ()
+
+@property (strong, nonatomic, readwrite) NSMutableArray *subtitleItems;
+
+@property (strong, nonatomic) NSDictionary *subtitleItemsDictionary;
+
+@end
 
 @implementation SOSubtitle
 
-- (BFTask *)subtitleFromFile:(NSString *)filePath {
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-        NSStringEncoding encoding;
-        NSError *error = nil;
-        NSString *string = [[NSString alloc] initWithContentsOfFile:filePath
-                                                       usedEncoding:&encoding
-                                                              error:&error];
-
-        if ([error code] == NSFileReadUnknownStringEncodingError) { // couldn't determine file encoding
-            error = nil;
-            string = [[NSString alloc] initWithContentsOfFile:filePath
-                                                     encoding:NSISOLatin1StringEncoding
-                                                        error:&error];
+- (NSDictionary *)subtitleItemsDictionary {
+    if (!_subtitleItemsDictionary) {
+        NSMutableDictionary *aux = [[NSMutableDictionary alloc] init];
+        for (SOSubtitleItem *item in self.subtitleItems) {
+            [aux setObject:item forKey:@(floor(CMTimeGetSeconds(item.startTime)))];
         }
-
-        if (string == nil) {
-            NSLog(@"%@", [error localizedDescription]);
-            return [BFTask taskWithError:error];
-        } else {
-            return [self subtitleWithString:string error:NULL];
-        }
-    } else {
-        return nil;
+        _subtitleItemsDictionary = [aux copy];
     }
+    return _subtitleItemsDictionary;
+}
+
+- (BFTask *)subtitleFromURL:(NSURL *)url {
+    NSError *error;
+
+    return [[self subtitleFromURL:url
+                         encoding:NSUTF8StringEncoding
+                            error:error] continueWithBlock:^id (BFTask *task) {
+        if (task.result) {
+            NSString *string = [[NSString alloc] initWithData:task.result
+                                                     encoding:NSUTF8StringEncoding];
+            return [self subtitleWithString:string
+                                      error:error];
+        } else {
+            return [BFTask taskWithError:task.error];
+        }
+    }];
 }
 
 - (BFTask *)subtitleFromURL:(NSURL *)fileURL
                    encoding:(NSStringEncoding)encoding
                       error:(NSError *)error {
-    NSString *str = [NSString stringWithContentsOfURL:fileURL
-                                             encoding:encoding
-                                                error:&error];
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
 
-    if (str == nil) return nil;
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
 
-    return [self subtitleWithString:str error:error];
+    AFHTTPRequestOperation *operation = [manager GET:fileURL.absoluteString
+                                          parameters:nil
+                                             success:nil
+                                             failure:nil];
+    
+    BFTaskCompletionSource *completionSource = [BFTaskCompletionSource taskCompletionSource];
+
+    [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                         [completionSource setResult:responseObject];
+                                     }
+                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                         [completionSource setError:error];
+                                     }];
+
+    return completionSource.task;
 }
 
 - (BFTask *)subtitleWithString:(NSString *)str
                          error:(NSError *)error {
     BFTaskCompletionSource *taskCompletionSource = [BFTaskCompletionSource taskCompletionSource];
-    
+
     SOSubtitle *subtitle = [[SOSubtitle alloc] init];
 
-    if (subtitle) {
-        subtitle.subtitleItems = [NSMutableArray arrayWithCapacity:100];
-        BOOL success = [subtitle _populateFromString:str
-                                               error:&error];
+    subtitle.subtitleItems = [NSMutableArray arrayWithCapacity:100];
+    BOOL success = [subtitle parseFromString:str error:error];
 
-        if (!success) {
-            [taskCompletionSource setError:error];
-        } else {
-            [taskCompletionSource setResult:subtitle];
-        }
+    if (!success) {
+        [taskCompletionSource setError:error];
+    } else {
+        [taskCompletionSource setResult:subtitle];
     }
 
     return taskCompletionSource.task;
@@ -126,52 +145,55 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
 }
 
 // Returns YES if successful, NO if not.
-- (BOOL)_populateFromString:(NSString *)str
-                      error:(NSError **)error {
+- (BOOL)parseFromString:(NSString *)str error:(NSError *)error {
 #if 1
+    return [self subtitleItemsFromMalformedString:str error:error];
+#else /* if 1 */
+    return [self subtitleItemsFromRegularString:str error:error];
+#endif /* if 1 */
+}
+
+- (BOOL)subtitleItemsFromMalformedString:(NSString *)str error:(NSError *)error{
     // Should handle mal-formed SRT files. May fill error even if parsing was successful!
     // Basis for implementation donated by Peter Ljunglöf (SubTTS)
 #   define SCAN_LINEBREAK() scanLinebreak(scanner, linebreakString, lineNr)
 #   define SCAN_STRING(str) scanString(scanner, (str))
-
+    
     NSScanner *scanner = [NSScanner scannerWithString:str];
     [scanner setCharactersToBeSkipped:[NSCharacterSet whitespaceCharacterSet]];
-
+    
     // Auto-detect linebreakString
     NSString *linebreakString = nil;
     {
         NSCharacterSet *newlineCharacterSet = [NSCharacterSet newlineCharacterSet];
         BOOL ok = ([scanner scanUpToCharactersFromSet:newlineCharacterSet intoString:NULL] &&
                    [scanner scanCharactersFromSet:newlineCharacterSet intoString:&linebreakString]);
-
+        
         if (ok == NO) {
-            NSLog(@"Parse error in SRT string: no line break found!");
             linebreakString = @"\n";
         }
-
+        
         [scanner setScanLocation:0];
     }
-
+    
     NSString *subTextLineSeparator = @"\n";
     int subtitleNr = 0;
     int lineNr = 1;
-
+    
     NSRegularExpression *tagRe;
-
+    
     while (SCAN_LINEBREAK());  // Skip leading empty lines.
-
+    
     while (![scanner isAtEnd]) {
         NSString *subText;
         NSMutableArray *subTextLines;
         NSString *subTextLine;
         SOSubtitleTime start = { -1, -1, -1, -1 };
         SOSubtitleTime end = { -1, -1, -1, -1 };
-        BOOL hasPosition = NO;
-        SOSubtitlePosition position;
         int subtitleNr_;
-
+        
         subtitleNr++;
-
+        
         BOOL ok = ([scanner scanInt:&subtitleNr_] && SCAN_LINEBREAK() &&
                    // Start time
                    [scanner scanInt:&start.hours] && SCAN_STRING(@":") &&
@@ -179,105 +201,91 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                    [scanner scanInt:&start.seconds] &&
                    ((
 #if SUBVIEWER_SUPPORT
-                        (SCAN_STRING(@",") || SCAN_STRING(@".")) &&
+                     (SCAN_STRING(@",") || SCAN_STRING(@".")) &&
 #else
-                        SCAN_STRING(@",") &&
+                     SCAN_STRING(@",") &&
 #endif
-                        [scanner scanInt:&start.milliseconds]
-                        ) || YES) // We either find milliseconds or we ignore them.
+                     [scanner scanInt:&start.milliseconds]
+                     ) || YES) // We either find milliseconds or we ignore them.
                    &&
-
+                   
                    // Start/End separator
 #if SUBVIEWER_SUPPORT
                    (SCAN_STRING(@"-->") || SCAN_STRING(@",")) &&
 #else
                    SCAN_STRING(@"-->") && // We are skipping whitepace!
 #endif
-
+                   
                    // End time
                    [scanner scanInt:&end.hours] && SCAN_STRING(@":") &&
                    [scanner scanInt:&end.minutes] && SCAN_STRING(@":") &&
                    [scanner scanInt:&end.seconds] &&
                    ((
 #if SUBVIEWER_SUPPORT
-                        (SCAN_STRING(@",") || SCAN_STRING(@".")) &&
+                     (SCAN_STRING(@",") || SCAN_STRING(@".")) &&
 #else
-                        SCAN_STRING(@",") &&
+                     SCAN_STRING(@",") &&
 #endif
-                        [scanner scanInt:&end.milliseconds]
-                        ) || YES) // We either find milliseconds or we ignore them.
+                     [scanner scanInt:&end.milliseconds]
+                     ) || YES) // We either find milliseconds or we ignore them.
                    &&
-
-                   // Optional position
-                   (
-                       SCAN_LINEBREAK() ||
-                       ( // If there is no line break, this could be position information.
-                           [scanner scanString:@"X1:" intoString:NULL] &&
-                           [scanner scanInt:&position.x1] &&
-                           [scanner scanString:@"X2:" intoString:NULL] &&
-                           [scanner scanInt:&position.x2] &&
-                           [scanner scanString:@"Y1:" intoString:NULL] &&
-                           [scanner scanInt:&position.y1] &&
-                           [scanner scanString:@"Y2:" intoString:NULL] &&
-                           [scanner scanInt:&position.y2] &&
-                           SCAN_LINEBREAK() &&
-                           (hasPosition = YES))
-                   )
-                   &&
-
+                   
                    // Subtitle text
                    (
-                       [scanner scanUpToString:linebreakString intoString:&subTextLine] || // We either find subtitle text…
-                       (subTextLine = @"") // … or we assume empty text.
-                   )
+                    [scanner scanUpToString:linebreakString intoString:&subTextLine] || // We either find subtitle text…
+                    (subTextLine = @"") // … or we assume empty text.
+                    )
                    &&
-
+                   
                    // End of event
                    (SCAN_LINEBREAK() || [scanner isAtEnd])
                    );
-
+        
         if (!ok) {
             if (error != NULL) {
                 const NSUInteger contextLength = 20;
                 NSUInteger strLength = str.length;
                 NSUInteger errorLocation = [scanner scanLocation];
-
+                
                 NSRange beforeRange, afterRange;
-
+                
                 beforeRange.length = MIN(contextLength, errorLocation);
                 beforeRange.location = errorLocation - beforeRange.length;
                 NSString *beforeError = [str substringWithRange:beforeRange];
-
+                
                 afterRange.length = MIN(contextLength, (strLength - errorLocation));
                 afterRange.location = errorLocation;
                 NSString *afterError = [str substringWithRange:afterRange];
-
+                
                 NSString *errorDescription = [NSString stringWithFormat:NSLocalizedString(@"The SRT subtitles could not be parsed: error in subtitle #%d (line %d):\n%@<HERE>%@", @"Cannot parse SRT file"),
                                               subtitleNr, lineNr, beforeError, afterError];
                 NSDictionary *errorDetail = [NSDictionary dictionaryWithObjectsAndKeys:
                                              errorDescription, NSLocalizedDescriptionKey,
                                              nil];
-                *error = [NSError errorWithDomain:SOSubtitlesErrorDomain code:kCouldNotParseSRT userInfo:errorDetail];
+                error = [NSError errorWithDomain:SOSubtitlesErrorDomain
+                                            code:kCouldNotParseSRT
+                                        userInfo:errorDetail];
             }
-
+            
             return NO;
         }
-
+        
         if (subtitleNr != subtitleNr_) {
             NSLog(@"Subtitle # mismatch (line %d): got %d, expected %d. ", lineNr, subtitleNr_, subtitleNr);
             subtitleNr = subtitleNr_;
         }
-
+        
 #if SUBVIEWER_SUPPORT
         subTextLine = convertSubViewerLineBreaks(subTextLine);
 #endif
-
+        
         subTextLines = [NSMutableArray arrayWithObject:subTextLine];
-
+        
         // Accumulate multi-line text if any.
-        while ([scanner scanUpToString:linebreakString intoString:&subTextLine] && (SCAN_LINEBREAK() || [scanner isAtEnd]))
+        while ([scanner scanUpToString:linebreakString intoString:&subTextLine] &&
+               (SCAN_LINEBREAK() || [scanner isAtEnd]))
             [subTextLines addObject:subTextLine];
-
+        
         if (subTextLines.count == 1) {
             subText = [subTextLines objectAtIndex:0];
             subText = [subText stringByReplacingOccurrencesOfString:@"|"
@@ -287,135 +295,118 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
         } else {
             subText = [subTextLines componentsJoinedByString:subTextLineSeparator];
         }
-
+        
         // Curly braces enclosed tag processing
         {
             NSString *const tagStart = @"{";
-
+            
             NSRange searchRange = NSMakeRange(0, subText.length);
-
+            
             NSRange tagStartRange = [subText rangeOfString:tagStart options:NSLiteralSearch range:searchRange];
-
+            
             if (tagStartRange.location != NSNotFound) {
                 searchRange = NSMakeRange(tagStartRange.location, subText.length - tagStartRange.location);
                 NSMutableString *subTextMutable = [subText mutableCopy];
-
+                
                 // Remove all
                 if (tagRe == nil) {
                     NSString *const tagPattern = @"\\{(\\\\|Y:)[^\\{]+\\}";
-
+                    
                     tagRe = [[NSRegularExpression alloc] initWithPattern:tagPattern
                                                                  options:0
-                                                                   error:error];
-
-                    if (tagRe == nil) NSLog(@"%@", *error);
+                                                                   error:&error];
                 }
-
+                
                 [tagRe replaceMatchesInString:subTextMutable
                                       options:0
                                         range:searchRange
                                  withTemplate:@""];
-
+                
                 subText = [subTextMutable copy];
             }
         }
-
+        
         SOSubtitleItem *item = [[SOSubtitleItem alloc] initWithText:subText
                                                               start:start
                                                                 end:end];
-
-        if (hasPosition) {
-            item.frame = [SOSubtitleItem convertSubtitlePositionToCGRect:position];
-        }
-
+        
         [_subtitleItems addObject:item];
-
+        
         while (SCAN_LINEBREAK());  // Skip trailing empty lines.
     }
-
-#if 0
-    NSLog(@"Read %d = %lu subtitles", subtitleNr, [_subtitleItems count]);
-    SOSubtitleItem *sub = [_subtitleItems objectAtIndex:0];
-    NSLog(@"FIRST: '%@'", sub);
-    sub = [_subtitleItems lastObject];
-    NSLog(@"LAST: '%@'", sub);
-#endif
-
     return YES;
-
+    
 #   undef SCAN_LINEBREAK
 #   undef SCAN_STRING
-#else /* if 1 */
-      // Assumes that str is a correctly-formatted SRT file.
+}
+
+- (BOOL)subtitleItemsFromRegularString:(NSString *)str error:(NSError **)error {
+    // Assumes that str is a correctly-formatted SRT file.
     NSCharacterSet *alphanumericCharacterSet = [NSCharacterSet alphanumericCharacterSet];
-
+    
     __block SOSubtitleItem *cur = [SOSubtitleItem new];
-    __block SubRipScanPosition scanPosition = SubRipScanPositionArrayIndex;
+    __block SOSubtitleScanPosition scanPosition = SOSubtitleScanPositionArrayIndex;
     [str enumerateLinesUsingBlock:^(NSString *line, BOOL *stop) {
-             // Blank lines are delimiters.
-             NSRange r = [line rangeOfCharacterFromSet:alphanumericCharacterSet];
-
-             if (r.location != NSNotFound) {
-             BOOL actionAlreadyTaken = NO;
-
-             if (scanPosition == SubRipScanPositionArrayIndex) {
-                scanPosition = SubRipScanPositionTimes; // skip past the array index number.
+        // Blank lines are delimiters.
+        NSRange r = [line rangeOfCharacterFromSet:alphanumericCharacterSet];
+        
+        if (r.location != NSNotFound) {
+            BOOL actionAlreadyTaken = NO;
+            
+            if (scanPosition == SOSubtitleScanPositionArrayIndex) {
+                scanPosition = SOSubtitleScanPositionTimes;     // skip past the array index number.
                 actionAlreadyTaken = YES;
-             }
-
-             if ((scanPosition == SubRipScanPositionTimes) && (!actionAlreadyTaken)) {
+            }
+            
+            if ((scanPosition == SOSubtitleScanPositionTimes) && (!actionAlreadyTaken)) {
                 NSArray *times = [line componentsSeparatedByString:@" --> "];
                 NSString *beginning = [times objectAtIndex:0];
                 NSString *ending = [times objectAtIndex:1];
-
-                cur.startTime = [SubRip parseTimecodeStringIntoCMTime:beginning];
-                cur.endTime = [SubRip parseTimecodeStringIntoCMTime:ending];
-
-                scanPosition = SubRipScanPositionText;
+                
+                cur.startTime = [NSString parseTimecodeStringIntoCMTime:beginning];
+                cur.endTime = [NSString parseTimecodeStringIntoCMTime:ending];
+                
+                scanPosition = SOSubtitleScanPositionText;
                 actionAlreadyTaken = YES;
-             }
-
-             if ((scanPosition == SubRipScanPositionText) && (!actionAlreadyTaken)) {
+            }
+            
+            if ((scanPosition == SOSubtitleScanPositionText) && (!actionAlreadyTaken)) {
                 NSString *prevText = cur.text;
-
+                
                 if (prevText == nil) {
                     cur.text = line;
                 } else {
                     cur.text = [cur.text
                                 stringByAppendingFormat:@"\n%@", line];
                 }
-
-                scanPosition = SubRipScanPositionText;
-             }
-             } else {
-             #if SUBVIEWER_SUPPORT
-             cur.text = convertSubViewerLineBreaks(cur.text);
-             #endif
-
-             [_subtitleItems addObject:cur];
-             JX_RELEASE(cur);
-             cur = [SOSubtitleItem new];
-             scanPosition = SubRipScanPositionArrayIndex;
-             }
-         }];
-
-    switch (scanPosition) {
-        case SubRipScanPositionArrayIndex:
-            JX_RELEASE(cur);
-            break;
-
-        case SubRipScanPositionText:
+                
+                scanPosition = SOSubtitleScanPositionText;
+            }
+        } else {
+#if SUBVIEWER_SUPPORT
+            cur.text = convertSubViewerLineBreaks(cur.text);
+#endif
+            
             [_subtitleItems addObject:cur];
-            JX_RELEASE(cur);
-            break;
-
-        default:
-            break;
-    }
-
+            
+            cur = [SOSubtitleItem new];
+            scanPosition = SOSubtitleScanPositionArrayIndex;
+        }
+        
+        switch (scanPosition) {
+            case SOSubtitleScanPositionArrayIndex:
+                break;
+                
+            case SOSubtitleScanPositionText:
+                [_subtitleItems addObject:cur];
+                break;
+                
+            default:
+                break;
+        }
+    }];
+    
     return YES;
-
-#endif /* if 1 */
 }
 
 - (NSString *)description {
@@ -462,13 +453,19 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
     return nil;
 }
 
+- (SOSubtitleItem *)subtitleItemAtTime:(NSTimeInterval)time {
+    return self.subtitleItemsDictionary[@(floor(time))];
+}
+
 - (void)encodeWithCoder:(NSCoder *)encoder {
     [encoder encodeObject:_subtitleItems forKey:@"subtitleItems"];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [self init];
-    self.subtitleItems = [decoder decodeObjectForKey:@"subtitleItems"];
+    if (self) {
+        self.subtitleItems = [decoder decodeObjectForKey:@"subtitleItems"];
+    }
     return self;
 }
 
