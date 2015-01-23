@@ -12,9 +12,11 @@
 
 - (NSAttributedString *)HTMLString {
 
-#define FONT_SIZE 24
-    
+    static const NSUInteger kDefaultFontSize = 20;
+    static NSString * kDefaultFontFamily = @"HelveticaNeue";
+
     NSString *string = [self copy];
+    
     NSMutableAttributedString *HTMLString;
     
     if ([string rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch].location != NSNotFound) {
@@ -26,7 +28,8 @@
     }
     
     if (!HTMLString) {
-        HTMLString = [[NSMutableAttributedString alloc] initWithString:string];
+        HTMLString = [[NSMutableAttributedString alloc] initWithString:string
+                                                            attributes:nil];
     }
     
     NSRange HTMLStringRange = NSMakeRange(0, [HTMLString.string length]);
@@ -39,7 +42,13 @@
                         usingBlock:^(id value, NSRange range, BOOL *stop) {
                             if (value) {
                                 UIFont *oldFont = (UIFont *)value;
-                                UIFont *newFont = [oldFont fontWithSize:FONT_SIZE];
+                                NSString *fontName = kDefaultFontFamily;
+                                if ([oldFont.fontName rangeOfString:@"Italic"].location != NSNotFound) {
+                                    fontName = [fontName stringByAppendingString:@"-Italic"];
+                                } else if ([oldFont.fontName rangeOfString:@"Bold"].location != NSNotFound) {
+                                    fontName = [fontName stringByAppendingString:@"-Bold"];
+                                }
+                                UIFont *newFont = [UIFont fontWithName:fontName size:kDefaultFontSize];
                                 [HTMLString removeAttribute:NSFontAttributeName range:range];
                                 [HTMLString addAttribute:NSFontAttributeName value:newFont range:range];
                             }
@@ -48,7 +57,7 @@
     
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.alignment = NSTextAlignmentCenter;
-    paragraphStyle.lineSpacing = FONT_SIZE/2;
+    paragraphStyle.lineSpacing = kDefaultFontSize/2;
     
     //Add color and paragraph style
     [HTMLString addAttributes:@{
