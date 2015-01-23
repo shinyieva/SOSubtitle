@@ -12,6 +12,7 @@
 		490E03E01A5D11A80064EED6 /* libSOSubtitle.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 490E03D41A5D11A80064EED6 /* libSOSubtitle.a */; };
 		490E03EF1A5D13940064EED6 /* SOSubtitleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 490E03EE1A5D13940064EED6 /* SOSubtitleTests.m */; };
 		490E03F21A5D165C0064EED6 /* subtitle.srt in Resources */ = {isa = PBXBuildFile; fileRef = 490E03F11A5D165C0064EED6 /* subtitle.srt */; };
+		497086101A7223CE0013FD3B /* subtitle-non-UTF8.srt in Resources */ = {isa = PBXBuildFile; fileRef = 4970860F1A7223CE0013FD3B /* subtitle-non-UTF8.srt */; };
 		49AD13021A5FCD53006A606E /* SOSubtitleItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 49AD13011A5FCD53006A606E /* SOSubtitleItem.m */; };
 		49AD13061A5FCE69006A606E /* NSString+CMTime.m in Sources */ = {isa = PBXBuildFile; fileRef = 49AD13051A5FCE69006A606E /* NSString+CMTime.m */; };
 		49AD130A1A5FDB39006A606E /* SOSubtitleItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 49AD13001A5FCD53006A606E /* SOSubtitleItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -59,6 +60,7 @@
 		490E03EE1A5D13940064EED6 /* SOSubtitleTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SOSubtitleTests.m; sourceTree = "<group>"; };
 		490E03F11A5D165C0064EED6 /* subtitle.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = subtitle.srt; sourceTree = "<group>"; };
 		4970860E1A71832D0013FD3B /* SOAsyncTestHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SOAsyncTestHelper.h; sourceTree = "<group>"; };
+		4970860F1A7223CE0013FD3B /* subtitle-non-UTF8.srt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "subtitle-non-UTF8.srt"; sourceTree = "<group>"; };
 		49AD13001A5FCD53006A606E /* SOSubtitleItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SOSubtitleItem.h; sourceTree = "<group>"; };
 		49AD13011A5FCD53006A606E /* SOSubtitleItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SOSubtitleItem.m; sourceTree = "<group>"; };
 		49AD13041A5FCE69006A606E /* NSString+CMTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+CMTime.h"; sourceTree = "<group>"; };
@@ -155,6 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				490E03F11A5D165C0064EED6 /* subtitle.srt */,
+				4970860F1A7223CE0013FD3B /* subtitle-non-UTF8.srt */,
 			);
 			name = Stubs;
 			sourceTree = "<group>";
@@ -301,6 +304,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				497086101A7223CE0013FD3B /* subtitle-non-UTF8.srt in Resources */,
 				490E03F21A5D165C0064EED6 /* subtitle.srt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

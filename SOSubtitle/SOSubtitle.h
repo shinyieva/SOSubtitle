@@ -24,12 +24,6 @@
  */
 - (BFTask *)subtitleFromURL:(NSURL *)url;
 
-- (BFTask *)subtitleFromURL:(NSURL *)fileURL
-                   encoding:(NSStringEncoding)encoding
-                      error:(NSError *)error;
-
-- (NSString *)description;
-
 /**
  Finds the first SOSubtitleItem whose startTime <= desiredTime < endTime.
  

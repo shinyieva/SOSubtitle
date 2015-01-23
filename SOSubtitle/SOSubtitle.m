@@ -48,23 +48,32 @@ typedef enum {
 - (BFTask *)subtitleFromURL:(NSURL *)url {
     NSError *error;
 
-    return [[self subtitleFromURL:url
-                         encoding:NSUTF8StringEncoding
-                            error:error] continueWithBlock:^id (BFTask *task) {
+    return [[self fetchSubtitleFromURL:url
+                                 error:error] continueWithBlock:^id (BFTask *task) {
         if (task.result) {
             NSString *string = [[NSString alloc] initWithData:task.result
                                                      encoding:NSUTF8StringEncoding];
-            return [self subtitleWithString:string
-                                      error:error];
+            
+            if (!string) {
+                string = [[NSString alloc] initWithData:task.result encoding:NSASCIIStringEncoding];
+            }
+            
+            if (string) {
+                return [self subtitleWithString:string error:error];
+            } else {
+                NSError *error = [NSError errorWithDomain:SOSubtitlesErrorDomain
+                                                     code:kCouldNotParseSRT
+                                                 userInfo:nil];
+                return [BFTask taskWithError:error];
+            }
         } else {
             return [BFTask taskWithError:task.error];
         }
     }];
 }
 
-- (BFTask *)subtitleFromURL:(NSURL *)fileURL
-                   encoding:(NSStringEncoding)encoding
-                      error:(NSError *)error {
+- (BFTask *)fetchSubtitleFromURL:(NSURL *)fileURL
+                           error:(NSError *)error {
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
 
     manager.responseSerializer = [AFHTTPResponseSerializer serializer];

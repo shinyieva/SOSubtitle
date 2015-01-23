@@ -46,4 +46,31 @@
     XCTAssertNil(error, @"Should complete without error.");
 }
 
+- (void)testThatSubtitleNonUTF8EncodedInitializesFromURL {
+    [OHHTTPStubs stubRequestsPassingTest:^BOOL(NSURLRequest *request) {
+        return YES;
+    } withStubResponse:^OHHTTPStubsResponse *(NSURLRequest *request) {
+        NSString * path = OHPathForFileInBundle(@"subtitle-non-UTF8.srt", nil);
+        return [OHHTTPStubsResponse responseWithFileAtPath:path
+                                                statusCode:200
+                                                   headers:nil];
+    }];
+    
+    SOSubtitle * __block subtitle = nil;
+    NSError * __block error = nil;
+    
+    NSURL *url = [NSURL URLWithString:@"http://test.com/subtitle.srt"];
+    [[[SOSubtitle alloc] subtitleFromURL:url] continueWithBlock:^id(BFTask *task) {
+        subtitle = task.result;
+        
+        return nil;
+    }];
+    
+    SOAssertEventually(subtitle, @"Should complete with response.");
+    XCTAssertNotNil(subtitle.subtitleItems, @"Should initialize subtitle.");
+    XCTAssertEqual([subtitle.subtitleItems count], 100, @"Should initialize subitleItems.");
+    XCTAssertNil(error, @"Should complete without error.");
+}
+
+
 @end
