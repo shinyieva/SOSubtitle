@@ -20,7 +20,7 @@
 - (void)setUp {
     [super setUp];
 
-    NSString *subText = @"";
+    NSString *subText = @"Subtitle text";
     SOSubtitleTime subStartTime = { 0, 5, 25, 0 };
     SOSubtitleTime subEndTime = { 0, 8, 35, 0 };
     
@@ -37,7 +37,7 @@
 }
 
 - (void)testsThatSubtitleItemInitializes {
-    XCTAssertEqualObjects(self.subtitleItem.text, @"", @"Shoul initialize subtitle text.");
+    XCTAssertEqualObjects(self.subtitleItem.text, @"Subtitle text", @"Shoul initialize subtitle text.");
 }
 
 @end

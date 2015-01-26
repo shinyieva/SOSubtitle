@@ -16,7 +16,8 @@
 
 NSString *const SOSubtitlesErrorDomain = @"som.shinyieva.subtitles.error";
 
-const int kCouldNotParseSRT = 1009;
+const int SOSubtitlesErrorCouldNotParseSRT = 1009;
+const int SOSubtitlesErrorEmptySubtitle = 1010;
 
 typedef enum {
     SOSubtitleScanPositionArrayIndex,
@@ -47,7 +48,7 @@ typedef enum {
 
 - (BFTask *)subtitleFromURL:(NSURL *)url {
     NSError *error;
-
+    
     return [[self fetchSubtitleFromURL:url
                                  error:error] continueWithBlock:^id (BFTask *task) {
         if (task.result) {
@@ -62,7 +63,7 @@ typedef enum {
                 return [self subtitleWithString:string error:error];
             } else {
                 NSError *error = [NSError errorWithDomain:SOSubtitlesErrorDomain
-                                                     code:kCouldNotParseSRT
+                                                     code:SOSubtitlesErrorCouldNotParseSRT
                                                  userInfo:nil];
                 return [BFTask taskWithError:error];
             }
@@ -75,41 +76,47 @@ typedef enum {
 - (BFTask *)fetchSubtitleFromURL:(NSURL *)fileURL
                            error:(NSError *)error {
     AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
-
+    
     manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-
+    
     AFHTTPRequestOperation *operation = [manager GET:fileURL.absoluteString
                                           parameters:nil
                                              success:nil
                                              failure:nil];
     
     BFTaskCompletionSource *completionSource = [BFTaskCompletionSource taskCompletionSource];
-
+    
     [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                         [completionSource setResult:responseObject];
-                                     }
+        [completionSource setResult:responseObject];
+    }
                                      failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                          [completionSource setError:error];
                                      }];
-
+    
     return completionSource.task;
 }
 
 - (BFTask *)subtitleWithString:(NSString *)str
                          error:(NSError *)error {
     BFTaskCompletionSource *taskCompletionSource = [BFTaskCompletionSource taskCompletionSource];
-
+    
     SOSubtitle *subtitle = [[SOSubtitle alloc] init];
-
+    
     subtitle.subtitleItems = [NSMutableArray arrayWithCapacity:100];
     BOOL success = [subtitle parseFromString:str error:error];
-
-    if (!success) {
+    
+    if ([subtitle.subtitleItems count] == 0) {
+        error = [NSError errorWithDomain:SOSubtitlesErrorDomain
+                                    code:SOSubtitlesErrorEmptySubtitle
+                                userInfo:nil];
+    }
+    
+    if (!success || [subtitle.subtitleItems count] == 0) {
         [taskCompletionSource setError:error];
     } else {
         [taskCompletionSource setResult:subtitle];
     }
-
+    
     return taskCompletionSource.task;
 }
 
@@ -117,25 +124,25 @@ typedef enum {
 #pragma clang diagnostic ignored "-Wunused-function"
 NS_INLINE NSString * convertSubViewerLineBreaks(NSString *currentText) {
     NSUInteger currentTextLength = currentText.length;
-
+    
     if (currentTextLength == 0) return currentText;
-
+    
     NSRange currentTextRange = NSMakeRange(0, currentTextLength);
     NSString *subViewerLineBreak = @"[br]";
     NSRange subViewerLineBreakRange = [currentText rangeOfString:subViewerLineBreak
                                                          options:NSLiteralSearch
                                                            range:currentTextRange];
-
+    
     if (subViewerLineBreakRange.location != NSNotFound) {
         NSRange subViewerLineBreakSearchRange = NSMakeRange(subViewerLineBreakRange.location,
                                                             (currentTextRange.length - subViewerLineBreakRange.location));
-
+        
         currentText = [currentText stringByReplacingOccurrencesOfString:subViewerLineBreak
                                                              withString:@"\n"
                                                                 options:NSLiteralSearch
                                                                   range:subViewerLineBreakSearchRange];
     }
-
+    
     return currentText;
 }
 
@@ -143,13 +150,13 @@ NS_INLINE NSString * convertSubViewerLineBreaks(NSString *currentText) {
 
 NS_INLINE BOOL scanLinebreak(NSScanner *scanner, NSString *linebreakString, int linenr) {
     BOOL success = ([scanner scanString:linebreakString intoString:NULL] && (++linenr >= 0));
-
+    
     return success;
 }
 
 NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
     BOOL success = [scanner scanString:str intoString:NULL];
-
+    
     return success;
 }
 
@@ -272,7 +279,7 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
                                              errorDescription, NSLocalizedDescriptionKey,
                                              nil];
                 error = [NSError errorWithDomain:SOSubtitlesErrorDomain
-                                            code:kCouldNotParseSRT
+                                            code:SOSubtitlesErrorCouldNotParseSRT
                                         userInfo:errorDetail];
             }
             
@@ -427,23 +434,23 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
     // Requires that we ensure the subtitleItems are ordered, because we are using binary search.
     NSUInteger *index = NULL;
     NSUInteger subtitleItemsCount = _subtitleItems.count;
-
+    
     // Custom binary search.
     NSUInteger low = 0;
     NSUInteger high = subtitleItemsCount - 1;
-
+    
     while (low <= high) {
         NSUInteger mid = (low + high) >> 1;
         SOSubtitleItem *thisSub = [_subtitleItems objectAtIndex:mid];
         CMTime thisStartTime = thisSub.startTime;
-
+        
         if (CMTIME_COMPARE_INLINE(thisStartTime, <=, desiredTime)) {
             CMTime thisEndTime = thisSub.endTime;
-
+            
             if (CMTIME_COMPARE_INLINE(desiredTime, <, thisEndTime)) {
                 // desiredTime in range.
                 if (index != NULL) *index = mid;
-
+                
                 return thisSub;
             } else {
                 // Continue search in upper *half*.
@@ -451,14 +458,14 @@ NS_INLINE BOOL scanString(NSScanner *scanner, NSString *str) {
             }
         } else { /*if (CMTIME_COMPARE_INLINE(subStartTime, >, desiredTime))*/
             if (mid == 0) break;  // Nothing found.
-
+            
             // Continue search in lower *half*.
             high = mid - 1;
         }
     }
-
+    
     if (index != NULL) *index = NSNotFound;
-
+    
     return nil;
 }
 

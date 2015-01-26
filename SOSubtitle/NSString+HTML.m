@@ -19,8 +19,10 @@
     
     NSString *string = [self copy];
     
-    if ([[string substringToIndex:1] isEqualToString:@"\n"]) {
-        string = [string substringFromIndex:1];
+    if ([string length] > 0) {
+        if ([[string substringToIndex:1] isEqualToString:@"\n"]) {
+            string = [string substringFromIndex:1];
+        }
     }
     
     NSMutableAttributedString *HTMLString;
@@ -59,13 +61,13 @@
         [HTMLString endEditing];
     }
     
-    UIFont *defaultFont = [UIFont fontWithName:kDefaultFontFamily size:kDefaultFontSize];
-    //Workaround for iOS 7.0.3 && 7.0.4 font bug
-    if (defaultFont == nil && ([UIFontDescriptor class] != nil)) {
-        defaultFont = (__bridge_transfer UIFont*)CTFontCreateWithName((__bridge CFStringRef)kDefaultFontFamily, kDefaultFontSize, NULL);
-    }
-    
     if (!HTMLString) {
+        UIFont *defaultFont = [UIFont fontWithName:kDefaultFontFamily size:kDefaultFontSize];
+        //Workaround for iOS 7.0.3 && 7.0.4 font bug
+        if (defaultFont == nil && ([UIFontDescriptor class] != nil)) {
+            defaultFont = (__bridge_transfer UIFont*)CTFontCreateWithName((__bridge CFStringRef)kDefaultFontFamily, kDefaultFontSize, NULL);
+        }
+        
         HTMLString = [[NSMutableAttributedString alloc] initWithString:string
                                                             attributes:@{
                                                                          NSFontAttributeName: defaultFont
