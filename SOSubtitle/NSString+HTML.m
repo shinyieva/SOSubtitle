@@ -8,11 +8,13 @@
 
 #import "NSString+HTML.h"
 
+#import <CoreText/CoreText.h>
+
 @implementation NSString (HTML)
 
 - (NSAttributedString *)HTMLString {
     
-    static const NSUInteger kDefaultFontSize = 20;
+    static const CGFloat kDefaultFontSize = 20.0;
     static NSString * kDefaultFontFamily = @"HelveticaNeue";
     
     NSString *string = [self copy];
@@ -46,6 +48,10 @@
                                         fontName = [fontName stringByAppendingString:@"-Bold"];
                                     }
                                     UIFont *newFont = [UIFont fontWithName:fontName size:kDefaultFontSize];
+                                    //Workaround for iOS 7.0.3 && 7.0.4 font bug
+                                    if (newFont == nil && ([UIFontDescriptor class] != nil)) {
+                                        newFont = (__bridge_transfer UIFont*)CTFontCreateWithName((__bridge CFStringRef)fontName, kDefaultFontSize, NULL);
+                                    }
                                     [HTMLString removeAttribute:NSFontAttributeName range:range];
                                     [HTMLString addAttribute:NSFontAttributeName value:newFont range:range];
                                 }
@@ -53,13 +59,16 @@
         [HTMLString endEditing];
     }
     
-    
+    UIFont *defaultFont = [UIFont fontWithName:kDefaultFontFamily size:kDefaultFontSize];
+    //Workaround for iOS 7.0.3 && 7.0.4 font bug
+    if (defaultFont == nil && ([UIFontDescriptor class] != nil)) {
+        defaultFont = (__bridge_transfer UIFont*)CTFontCreateWithName((__bridge CFStringRef)kDefaultFontFamily, kDefaultFontSize, NULL);
+    }
     
     if (!HTMLString) {
         HTMLString = [[NSMutableAttributedString alloc] initWithString:string
                                                             attributes:@{
-                                                                         NSFontAttributeName: [UIFont fontWithName:kDefaultFontFamily
-                                                                                                              size:kDefaultFontSize]
+                                                                         NSFontAttributeName: defaultFont
                                                                          }];
         HTMLStringRange = NSMakeRange(0, [HTMLString.string length]);
     }
